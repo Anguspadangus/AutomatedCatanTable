@@ -7,3 +7,7 @@ Jacob Brown, Connor Klein, and Owen Popora\
 ## Requirements:
 matplotlib 3.6.3\
 build with python 3.11.5
+
+## Visualization
+https://github.com/Anguspadangus/AutomatedCatanTable/assets/71024865/375085e3-de47-452c-955f-abee7c00e6bf
+
