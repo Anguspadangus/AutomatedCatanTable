@@ -13,9 +13,9 @@ import time
 kit = MotorKit()
 
 def run_motor(throttle, duration):
-    kit.motor.throttle = throttle
+    kit.motor_M3.throttle = throttle
     time.sleep(duration)
-    kit.motor.throttle = 0
+    kit.motor_M3.throttle = 0
 
 try:
     # Blow out air at half throttle for 1 second
@@ -26,4 +26,4 @@ try:
 
 finally:
     # Turn off the motor
-    kit.motor.throttle = 0
+    kit.motor_M3.throttle = 0
