@@ -4,6 +4,7 @@ from matplotlib.patches import RegularPolygon, Circle
 class Tile():
     def __init__(self, shape):
         self.m_shape = shape
+        self.m_height = 0
         return
     
     def UpdatePosition(self, xy):
@@ -17,6 +18,7 @@ class Hex(Tile):
     def __init__(self, name, radius, center = (0,0)):
         Tile.__init__(self, RegularPolygon(center, 6, radius=radius))
         self.m_name = name
+        self.m_height = 1 # mm
     
 # The possible locations in a catan set for a resource card to be placed
 # Uses neighbors to determine if a hex can be placed, 0 represents border
@@ -45,4 +47,5 @@ class EmptyHex(Tile):
 class Number(Tile):
     def __init__(self, radius):
         Tile.__init__(self, Circle((0,0), radius=radius))
+        self.m_height = 1 #mm
             

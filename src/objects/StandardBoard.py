@@ -1,7 +1,10 @@
 from objects.tile import *
 from objects.Board import Board
-
 import math
+
+"""
+Defines the standard setup of a catan game, useful for tests and the final product.    
+"""
 
 def StandardSetup():
     # The size of each resource hex and number tile

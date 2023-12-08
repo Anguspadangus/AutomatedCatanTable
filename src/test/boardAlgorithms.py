@@ -1,5 +1,8 @@
 from objects.StandardBoard import StandardSetup
 
+"""
+Validating that each of the core functions produce no errors
+"""
 def main():
     B = StandardSetup()
     numberRemovalOrder = B.RemoveNumbers()
