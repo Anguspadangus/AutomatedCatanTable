@@ -1,13 +1,16 @@
-from tile import *
-from Board import Board
-
+from objects.tile import *
+from objects.Board import Board
 import math
 
-def main():
+"""
+Defines the standard setup of a catan game, useful for tests and the final product.    
+"""
+
+def StandardSetup():
     # The size of each resource hex and number tile
     hexRadius = 3.5 / 2 # inches
     circleRadius = 0.492126 # inches
-    
+
     # The neighbors of each empty hex
     A_neighbors = ['E', 'B', '0','0', '0', 'D']
     B_neighbors = ['F', 'C', '0','0', 'A', 'E']
@@ -75,12 +78,4 @@ def main():
         [['S', S_pos, S_neighbors], Hex('S', hexRadius), Number(circleRadius)]
     ]
 
-    B = Board(configuration, hexRadius)
-    numberRemovalOrder = B.RemoveNumbers()
-    resourceRemovalOrder = B.RemoveResources()
-    resourcePlaceOder = B.PlaceResources()
-    numberPlaceOder = B.PlaceNumbers()
-    
-if __name__ == '__main__':
-    main()
-
+    return Board(configuration, hexRadius)

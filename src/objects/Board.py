@@ -1,4 +1,4 @@
-from tile import *
+from objects.tile import *
 from collections import deque
 import random
 import copy
@@ -141,10 +141,10 @@ class Board():
         self.PlaceNumbers()
         
     def LoadDesert(self):
-        f = open('src\Algorithms\desertPosition.json')
+        f = open('Algorithms\desertPosition.json')
         data = json.load(f)
         return tuple(data["pos"])
 
     def SaveDesert(self):
-        with open('src\Algorithms\desertPosition.json', 'w') as f:
+        with open('Algorithms\desertPosition.json', 'w') as f:
             json.dump({"pos" :self.m_desertPosition}, f)            
