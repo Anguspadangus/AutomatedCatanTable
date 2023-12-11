@@ -1,20 +1,14 @@
 import os
 import cv2
 import numpy as np
+from objects.Piece import *
+from objects.StandardBoard import StandardSetup
+from objects.Board import Board
 
 # Elements of those lists will be displayed in windows
 processed_images = []
 
 
-def loadImages():
-    images = []
-    main_dir = 'photos'
-    for directory in os.listdir(main_dir):
-        for file_name in os.listdir(main_dir + '/' + directory):
-            file_path = main_dir + '/' + directory + '/' + file_name
-            images.append(cv2.imread(file_path))
-    print('All images loaded')
-    return images
 
 
 def drawContourOnImage(image, contour):
@@ -257,26 +251,97 @@ def workOnImage(rawData):
 
     return rawData
 
+def loadImage():
+    file = 'test\\images\\robber1.jpeg'
+    image = cv2.imread(file)
+    return image
+
+def cropToHexes(image):#, board : Board):
+    b = StandardSetup()
+    b.m_desertPosition = b.m_emptySpaces[5].m_shape.xy # for testing
+    centers = [space.m_shape.xy for space in b.m_emptySpaces if space.m_shape.xy != b.m_desertPosition]
+    offset = (900, 1100)
+    scaler = (200, 200)
+    box = (250, 250)
+    
+    cropped_images = []
+    
+    color = (0,255,0)
+    radius = 50
+    for center in centers:
+        pos = (int(center[0]*scaler[0]+offset[0]), int(center[1]*scaler[1]+offset[1]))
+        # image = cv2.circle(image, pos, radius, color, -1)
+        image2 = image[pos[1] - box[1]: pos[1] + box[1], pos[0] - box[0]: pos[0] + box[0]]
+        cropped_images.append(image2)
+        
+    return cropped_images
+
+def findNumbers(cropped_images):
+    for i, im in enumerate(cropped_images):
+        gray_image = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+
+        # Apply GaussianBlur to reduce noise and improve circle detection
+        blurred_image = cv2.GaussianBlur(gray_image, (9, 9), 2)
+
+        # Use Hough Circle Transform to detect circles
+        circles = cv2.HoughCircles(
+            blurred_image,
+            cv2.HOUGH_GRADIENT,
+            dp=1,      # Inverse ratio of the accumulator resolution to the image resolution.
+            minDist=50,  # Minimum distance between the centers of detected circles.
+            param1=100, # Upper threshold for the internal Canny edge detector.
+            param2=30,  # Threshold for center detection.
+            minRadius=80, # Minimum radius of the detected circles.
+            maxRadius=100 # Maximum radius of the detected circles.
+        )
+        
+        # Draw the circles on the original image
+        if circles is not None:
+            circles = np.uint16(np.around(circles))
+            for j in circles[0, :]:
+                # Draw the outer circle
+                im = cv2.circle(im, (j[0], j[1]), j[2], (0, 255, 0), 2)
+                # Draw the center of the circle
+                im = cv2.circle(im, (j[0], j[1]), 2, (0, 0, 255), 3)
+            
+        cropped_images[i] = im
+    
+    return cropped_images
 
 def main():
-    images = loadImages()
-    for i, image in enumerate(images):
-        print("Processing image {}/{}".format(i + 1, len(images)))
-        data = image.copy()
-        imageDone = workOnImage(data)
-        processed_images.append(imageDone)
-    print('All images processed')
-
-    # Display images
-    for i in range(len(processed_images)):
-        # Create window
-        cv2.namedWindow('catan_org', cv2.WINDOW_GUI_NORMAL)
-        cv2.namedWindow('catan_processed', cv2.WINDOW_GUI_NORMAL)
-        # cv2.resizeWindow('catan', 1920, 1080)
-        cv2.imshow('catan_org', images[i])
-        cv2.imshow('catan_processed', processed_images[i])
+    os.getcwd()
+    image = loadImage()
+    croppedImages = cropToHexes(image)
+    circles = findNumbers(croppedImages)
+    
+    
+    for i in circles:
+        cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+        cv2.imshow('output',i)
         cv2.waitKey(0)
-    cv2.destroyAllWindows()
+        cv2.destroyAllWindows()
+    
+    # cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+    # cv2.imshow('output',image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    # for i, image in enumerate(images):
+    #     print("Processing image {}/{}".format(i + 1, len(images)))
+    #     data = image.copy()
+    #     imageDone = workOnImage(data)
+    #     processed_images.append(imageDone)
+    # print('All images processed')
+
+    # # Display images
+    # for i in range(len(processed_images)):
+    #     # Create window
+    #     cv2.namedWindow('catan_org', cv2.WINDOW_GUI_NORMAL)
+    #     cv2.namedWindow('catan_processed', cv2.WINDOW_GUI_NORMAL)
+    #     # cv2.resizeWindow('catan', 1920, 1080)
+    #     cv2.imshow('catan_org', images[i])
+    #     cv2.imshow('catan_processed', processed_images[i])
+    #     cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
