@@ -8,9 +8,6 @@ from objects.Board import Board
 # Elements of those lists will be displayed in windows
 processed_images = []
 
-
-
-
 def drawContourOnImage(image, contour):
     cv2.drawContours(image, [contour], -1, 255, cv2.FILLED)
     return image
@@ -251,15 +248,17 @@ def workOnImage(rawData):
 
     return rawData
 
+def convertImageToSpace(image):
+    # https://nilesh0109.medium.com/camera-image-perspective-transformation-to-different-plane-using-opencv-5e389dd56527
+    pass
+
 def loadImage():
     file = 'test\\images\\robber1.jpeg'
     image = cv2.imread(file)
     return image
 
-def cropToHexes(image):#, board : Board):
-    b = StandardSetup()
-    b.m_desertPosition = b.m_emptySpaces[5].m_shape.xy # for testing
-    centers = [space.m_shape.xy for space in b.m_emptySpaces if space.m_shape.xy != b.m_desertPosition]
+def cropToHexes(image, board : Board):
+    centers = [space.m_shape.xy for space in board.m_emptySpaces if space.m_shape.xy != board.m_desertPosition]
     offset = (900, 1100)
     scaler = (200, 200)
     box = (250, 250)
@@ -276,7 +275,13 @@ def cropToHexes(image):#, board : Board):
         
     return cropped_images
 
-def findNumbers(cropped_images):
+def findNumbers(image, cropped_images, board : Board):
+    centers = [space.m_shape.xy for space in board.m_emptySpaces if space.m_shape.xy != board.m_desertPosition]
+    offset = (900, 1100)
+    scaler = (200, 200)
+    box = (250, 250)
+    positions = []
+    
     for i, im in enumerate(cropped_images):
         gray_image = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
 
@@ -299,27 +304,81 @@ def findNumbers(cropped_images):
         if circles is not None:
             circles = np.uint16(np.around(circles))
             for j in circles[0, :]:
+                pos = (offset[0]-box[0]+j[0]+int(centers[i][0]*scaler[0]), offset[1]-box[1]+j[1]+int(centers[i][1]*scaler[1]))
+                positions.append(pos)
                 # Draw the outer circle
-                im = cv2.circle(im, (j[0], j[1]), j[2], (0, 255, 0), 2)
+                image = cv2.circle(image, pos, j[2], (255, 0, 0), 10)
                 # Draw the center of the circle
-                im = cv2.circle(im, (j[0], j[1]), 2, (0, 0, 255), 3)
+                image = cv2.circle(image, pos, 2, (0, 0, 255), 10)
             
-        cropped_images[i] = im
+    return positions
+
+def findPiece(piece : Piece, image):
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv_image, piece.m_color[0], piece.m_color[1])
+    result = cv2.bitwise_and(image, image, mask=mask)
+    result = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
+    # result = cv2.GaussianBlur(result, (9, 9), 2)
+    # result = cv2.Canny(result, 30, 200)
     
-    return cropped_images
+    contours, hierarchy = cv2.findContours(result, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+    # contours = [cv2.convexHull(contour) for contour in contours]
+    contour_areas = [cv2.contourArea(contour) for contour in contours]
+    # Find indices of largest contours
+    indices_of_contours_in_range = [i for i, area in enumerate(contour_areas) if piece.m_area[0] <= area <= piece.m_area[1]]
+
+    indices_of_largest_contours = sorted(range(len(contour_areas)), key=lambda i: contour_areas[i], reverse=True)
+
+    # Specify the number of largest contours you want to keep
+    num_largest_contours = 10  # Change this value as needed
+
+    # Extract the largest contours
+    largest_contours = [contours[i] for i in indices_of_contours_in_range]
+    # largest_areas = [contour_areas[i] for i in indices_of_largest_contours[:num_largest_contours]]
+    
+    for contour in largest_contours:
+        # Calculate moments
+        M = cv2.moments(contour)
+
+        # Calculate centroid
+        cx = int(M['m10'] / M['m00'])
+        cy = int(M['m01'] / M['m00'])
+
+        # Print or use centroid coordinates as needed
+        print(f"Center of mass: ({cx}, {cy})")
+
+        # Optionally, draw a circle at the center of mass
+        image = cv2.circle(image, (cx, cy), 20, (255, 0, 0), 10)
+            
+    return image
+
+# need a complete board.
+def maskBoard(image):
+    contour = findBackground(image)
+    mask = np.zeros_like(image)
+    cv2.drawContours(mask, contour,-1, (255), thickness=cv2.FILLED)
+    
+    return mask
 
 def main():
-    os.getcwd()
+    b = StandardSetup()
+    b.m_desertPosition = b.m_emptySpaces[5].m_shape.xy # for testing
+    pieces = [Road('blue'), Settlememt('blue'), City('blue')]
+    pieces = [Robber(), Road('red'), Settlememt('red'), City('red'),
+              Road('blue'), Settlememt('blue'), City('blue'),
+              Road('white'), Settlememt('white'), City('white'),
+              Road('orange'), Settlememt('orange'), City('orange')]
     image = loadImage()
-    croppedImages = cropToHexes(image)
-    circles = findNumbers(croppedImages)
+    for p in pieces:
+        image = findPiece(p, image)
+    # croppedImages = cropToHexes(image, b)
+    # centerPositions = findNumbers(image, croppedImages, b)
     
-    
-    for i in circles:
-        cv2.namedWindow('output', cv2.WINDOW_NORMAL)
-        cv2.imshow('output',i)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+    # for i in circles:
+    cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+    cv2.imshow('output', image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
     
     # cv2.namedWindow('output', cv2.WINDOW_NORMAL)
     # cv2.imshow('output',image)
