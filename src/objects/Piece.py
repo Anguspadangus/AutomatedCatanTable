@@ -17,7 +17,7 @@ class Robber(Piece):
         
 class Road(Piece):
     def __init__(self, color):
-        super().__init__(5, color, [5000,8000])
+        super().__init__(5, color, [4000,7000])
         
 class City(Piece):
     def __init__(self, color):
@@ -25,4 +25,4 @@ class City(Piece):
         
 class Settlememt(Piece):
     def __init__(self, color):
-        super().__init__(12, color, [8000,15000])
+        super().__init__(12, color, [7000,15000])

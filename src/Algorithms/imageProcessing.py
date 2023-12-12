@@ -275,7 +275,8 @@ def cropToHexes(image, board : Board):
         
     return cropped_images
 
-def findNumbers(image, cropped_images, board : Board):
+def findNumbers(image, board : Board):
+    cropped_images = cropToHexes(image, board)
     centers = [space.m_shape.xy for space in board.m_emptySpaces if space.m_shape.xy != board.m_desertPosition]
     offset = (900, 1100)
     scaler = (200, 200)
@@ -304,37 +305,29 @@ def findNumbers(image, cropped_images, board : Board):
         if circles is not None:
             circles = np.uint16(np.around(circles))
             for j in circles[0, :]:
-                pos = (offset[0]-box[0]+j[0]+int(centers[i][0]*scaler[0]), offset[1]-box[1]+j[1]+int(centers[i][1]*scaler[1]))
+                pos = [offset[0]-box[0]+j[0]+int(centers[i][0]*scaler[0]), offset[1]-box[1]+j[1]+int(centers[i][1]*scaler[1])]
                 positions.append(pos)
                 # Draw the outer circle
-                image = cv2.circle(image, pos, j[2], (255, 0, 0), 10)
-                # Draw the center of the circle
-                image = cv2.circle(image, pos, 2, (0, 0, 255), 10)
+                # image = cv2.circle(image, pos, j[2], (255, 0, 0), 10)
+                # # Draw the center of the circle
+                # image = cv2.circle(image, pos, 2, (0, 0, 255), 10)
             
     return positions
 
 def findPiece(piece : Piece, image):
+    pieces = []
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(hsv_image, piece.m_color[0], piece.m_color[1])
     result = cv2.bitwise_and(image, image, mask=mask)
     result = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
-    # result = cv2.GaussianBlur(result, (9, 9), 2)
-    # result = cv2.Canny(result, 30, 200)
     
-    contours, hierarchy = cv2.findContours(result, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-    # contours = [cv2.convexHull(contour) for contour in contours]
+    contours, _ = cv2.findContours(result, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
     contour_areas = [cv2.contourArea(contour) for contour in contours]
     # Find indices of largest contours
     indices_of_contours_in_range = [i for i, area in enumerate(contour_areas) if piece.m_area[0] <= area <= piece.m_area[1]]
 
-    indices_of_largest_contours = sorted(range(len(contour_areas)), key=lambda i: contour_areas[i], reverse=True)
-
-    # Specify the number of largest contours you want to keep
-    num_largest_contours = 10  # Change this value as needed
-
     # Extract the largest contours
     largest_contours = [contours[i] for i in indices_of_contours_in_range]
-    # largest_areas = [contour_areas[i] for i in indices_of_largest_contours[:num_largest_contours]]
     
     for contour in largest_contours:
         # Calculate moments
@@ -344,13 +337,21 @@ def findPiece(piece : Piece, image):
         cx = int(M['m10'] / M['m00'])
         cy = int(M['m01'] / M['m00'])
 
+        pieces.append([cx,cy])
         # Print or use centroid coordinates as needed
-        print(f"Center of mass: ({cx}, {cy})")
+        # print(f"Center of mass: ({cx}, {cy})")
 
         # Optionally, draw a circle at the center of mass
-        image = cv2.circle(image, (cx, cy), 20, (255, 0, 0), 10)
+        # image = cv2.circle(image, (cx, cy), 20, (255, 0, 0), 10)
             
-    return image
+    return pieces
+
+def findPieces(pieces, image):
+    pieceList = []
+    for p in pieces:
+        pieceList.extend(findPiece(p, image))
+        
+    return pieceList
 
 # need a complete board.
 def maskBoard(image):
@@ -360,47 +361,66 @@ def maskBoard(image):
     
     return mask
 
-def main():
-    b = StandardSetup()
-    b.m_desertPosition = b.m_emptySpaces[5].m_shape.xy # for testing
-    pieces = [Road('blue'), Settlememt('blue'), City('blue')]
-    pieces = [Robber(), Road('red'), Settlememt('red'), City('red'),
-              Road('blue'), Settlememt('blue'), City('blue'),
-              Road('white'), Settlememt('white'), City('white'),
-              Road('orange'), Settlememt('orange'), City('orange')]
-    image = loadImage()
-    for p in pieces:
-        image = findPiece(p, image)
-    # croppedImages = cropToHexes(image, b)
-    # centerPositions = findNumbers(image, croppedImages, b)
+def constructHexagon(center, sideLength):
+    hexagon_vertices = []
+    for i in range(6):
+        x = int(center[0] + sideLength * np.cos(i * np.pi / 3))
+        y = int(center[1] + sideLength * np.sin(i * np.pi / 3))
+        hexagon_vertices.append((x, y))
+        
+    return hexagon_vertices
+
+def HexagonMask(image, board):
+    # Define the size of the hexagon
+    side_length = 1700
+
+    # Calculate the coordinates of the hexagon vertices
+    hexagon_center = (int(image.shape[1]/2), int(image.shape[0]/2)+100)  # Example center coordinates
+    hexagon_vertices = constructHexagon(hexagon_center, side_length)
+
+    # Create a black image (initially all zeros) to serve as the mask
+    mask = np.zeros_like(image[:, :, 0])
+
+    # Fill the mask with a white hexagon
+    cv2.fillConvexPoly(mask, np.array(hexagon_vertices), 255)
+
+    # Apply the mask to the original image
+    result_image = cv2.bitwise_and(image, image, mask=mask)
     
-    # for i in circles:
+    # now apply to every single hex
+    centers = [space.m_shape.xy for space in board.m_emptySpaces if space.m_shape.xy != board.m_desertPosition]
+    offset = (900, 1100)
+    scaler = (200, 200)
+    
+    for center in centers:
+        pos = (int(center[0]*scaler[0]+offset[0]), int(center[1]*scaler[1]+offset[1]))
+        result_image = cv2.circle(result_image, (pos[0], pos[1]), 150, (0,0,0), -1)
+        
+    return result_image
+
+def displayOnImage(cords, image):
+    for cord in cords:
+        image = cv2.circle(image, cord, 20, (255, 0, 0), 10)
+        
     cv2.namedWindow('output', cv2.WINDOW_NORMAL)
     cv2.imshow('output', image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     
-    # cv2.namedWindow('output', cv2.WINDOW_NORMAL)
-    # cv2.imshow('output',image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-    # for i, image in enumerate(images):
-    #     print("Processing image {}/{}".format(i + 1, len(images)))
-    #     data = image.copy()
-    #     imageDone = workOnImage(data)
-    #     processed_images.append(imageDone)
-    # print('All images processed')
-
-    # # Display images
-    # for i in range(len(processed_images)):
-    #     # Create window
-    #     cv2.namedWindow('catan_org', cv2.WINDOW_GUI_NORMAL)
-    #     cv2.namedWindow('catan_processed', cv2.WINDOW_GUI_NORMAL)
-    #     # cv2.resizeWindow('catan', 1920, 1080)
-    #     cv2.imshow('catan_org', images[i])
-    #     cv2.imshow('catan_processed', processed_images[i])
-    #     cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+def main():
+    b = StandardSetup()
+    b.m_desertPosition = b.m_emptySpaces[5].m_shape.xy # for testing
+    pieces = [Road('red'), Settlememt('red'), City('red'),
+              Road('blue'), Settlememt('blue'), City('blue'),
+              Road('white'), Settlememt('white'), City('white'),
+              Road('orange'), Settlememt('orange'), City('orange')]
+    image = loadImage()
+    treated_image = HexagonMask(image, b)
+    locs = findPieces(pieces, treated_image)
+    locs.extend(findPieces([Robber()], image))
+    locs.extend(findNumbers(image, b))
+    
+    displayOnImage(locs, image)
 
 
 if __name__ == "__main__":
