@@ -4,6 +4,7 @@ import numpy as np
 from objects.Piece import *
 from objects.StandardBoard import StandardSetup
 from objects.Board import Board
+from objects.tile import Number
 
 # Elements of those lists will be displayed in windows
 processed_images = []
@@ -306,11 +307,7 @@ def findNumbers(image, board : Board):
             circles = np.uint16(np.around(circles))
             for j in circles[0, :]:
                 pos = [offset[0]-box[0]+j[0]+int(centers[i][0]*scaler[0]), offset[1]-box[1]+j[1]+int(centers[i][1]*scaler[1])]
-                positions.append(pos)
-                # Draw the outer circle
-                # image = cv2.circle(image, pos, j[2], (255, 0, 0), 10)
-                # # Draw the center of the circle
-                # image = cv2.circle(image, pos, 2, (0, 0, 255), 10)
+                positions.append([Number(10), pos])
             
     return positions
 
@@ -337,7 +334,7 @@ def findPiece(piece : Piece, image):
         cx = int(M['m10'] / M['m00'])
         cy = int(M['m01'] / M['m00'])
 
-        pieces.append([cx,cy])
+        pieces.append([piece, [cx,cy]])
         # Print or use centroid coordinates as needed
         # print(f"Center of mass: ({cx}, {cy})")
 
@@ -400,7 +397,7 @@ def HexagonMask(image, board):
 
 def displayOnImage(cords, image):
     for cord in cords:
-        image = cv2.circle(image, cord, 20, (255, 0, 0), 10)
+        image = cv2.circle(image, cord[1], 20, (255, 0, 0), 10)
         
     cv2.namedWindow('output', cv2.WINDOW_NORMAL)
     cv2.imshow('output', image)
