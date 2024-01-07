@@ -72,7 +72,9 @@ class Board():
         for emptyHex in emptyHexes:
             if hex.m_name in emptyHex.m_neighbors:
                 emptyHex.m_neighborCount += 1
-                
+    
+    # I do not update the name of the hex after it was placed, so could not run this multiple times programmatically.
+    # Would need to create a new board instance.
     def PlaceResources(self):
         # assuming its completely empty
         # Want to make a deepcopy so we can reuse the empty hexes
@@ -143,8 +145,9 @@ class Board():
     def LoadDesert(self):
         f = open('Algorithms\desertPosition.json')
         data = json.load(f)
+        f.close()
         return tuple(data["pos"])
 
     def SaveDesert(self):
         with open('Algorithms\desertPosition.json', 'w') as f:
-            json.dump({"pos" :self.m_desertPosition}, f)            
+            json.dump({"pos" :self.m_desertPosition}, f)         
