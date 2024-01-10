@@ -52,6 +52,15 @@ def convertImageToSpace(image):
     # https://nilesh0109.medium.com/camera-image-perspective-transformation-to-different-plane-using-opencv-5e389dd56527
     pass
 
+def undistortImage(image):
+    # DIM=XXX
+    # K=np.array(YYY)
+    # D=np.array(ZZZ)
+    # h,w = image.shape[:2]
+    # map1, map2 = cv2.fisheye.initUndistortRectifyMap(K, D, np.eye(3), K, DIM, cv2.CV_16SC2)
+    # undistorted_img = cv2.remap(image, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+    return image
+
 def loadImage(filepath = 'test\\images\\robber1.jpeg'):
     image = cv2.imread(filepath)
     return image
@@ -202,7 +211,8 @@ def displayOnImage(cords, image):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     
-def analyzeBoard(board, image, pieces = []): 
+def analyzeBoard(board, image, pieces = []):
+    image = undistortImage(image)
     treated_image = HexagonMask(image, board)
     robber = None
     for i, obj in enumerate(pieces):
