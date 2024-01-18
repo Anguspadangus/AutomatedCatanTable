@@ -78,4 +78,4 @@ def StandardSetup():
         [['S', S_pos, S_neighbors], Hex('S', hexRadius), Number(circleRadius)]
     ]
 
-    return Board(configuration, hexRadius)
+    return Board(configuration, hexRadius, (0,0))
