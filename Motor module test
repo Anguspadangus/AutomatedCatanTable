@@ -30,3 +30,8 @@ elif input_distance < 0:
         time.sleep(0.01)
 else:
     print("Input distance should be non-zero.")
+
+Enter distance in centimeters: 50
+Traceback (most recent call last):
+  File "<string>", line 23, in <module>
+TypeError: 'float' object cannot be interpreted as an integer
