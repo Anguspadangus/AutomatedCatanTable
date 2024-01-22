@@ -12,26 +12,22 @@ distance_per_step = 0.1  # Distance moved per step in cm
 
 # Calculate steps based on distance and step angle
 # Calculate steps based on input distance
-steps = (input_distance / distance_per_step)
+steps = int(input_distance / distance_per_step)
 
 # Initialize MotorKit
 kit = MotorKit(i2c=board.I2C())
 
 # Move forward or backward based on the sign of the input distance
+#make sure to note the ports that you are using to drive each motor
 if input_distance > 0:
     # Move forward
     for i in range(abs(steps)):
-        kit.stepper1.onestep()
+        kit.stepper2.onestep()
         time.sleep(0.01)
 elif input_distance < 0:
     # Move backward
     for j in range(abs(steps)):
-        kit.stepper1.onestep(direction=stepper.BACKWARD)
+        kit.stepper2.onestep(direction=stepper.BACKWARD)
         time.sleep(0.01)
 else:
     print("Input distance should be non-zero.")
-
-Enter distance in centimeters: 50
-Traceback (most recent call last):
-  File "<string>", line 23, in <module>
-TypeError: 'float' object cannot be interpreted as an integer
