@@ -1,0 +1,24 @@
+import time
+import board
+from adafruit_motorkit import MotorKit
+
+# Initialize MotorKit
+kit = MotorKit(i2c=board.I2C())
+
+def move_stepper(steps):
+    if steps > 0:
+        # Move forward
+        for _ in range(steps):
+            kit.stepper1.onestep()
+            time.sleep(0.01)
+    elif steps < 0:
+        # Move backward
+        for _ in range(abs(steps)):
+            kit.stepper1.onestep(direction=stepper.BACKWARD)
+            time.sleep(0.01)
+
+# Example: Move 50 steps forward
+move_stepper(50)
+
+# Example: Move 30 steps backward
+move_stepper(-30)
