@@ -1,4 +1,4 @@
-from objects.tile import *
+from objects.BoardComponents import *
 from collections import deque
 import random
 import copy
@@ -7,147 +7,147 @@ import json
 class Board():
     def __init__(self, configuration, unit = 1, position = (0,0)):
         # Position of the btm left center of hexigon in world position
-        self.m_position = position
+        self.position = position
         # The possible spaces on the catan board
-        self.m_emptySpaces = [EmptyHex(unit, config[0][2],
-                                       (config[0][1][0]+self.m_position[0], config[0][1][1]+self.m_position[1])) for config in configuration]
+        self.empty_spaces = [EmptyHex(unit, config[0][2],
+                                       (config[0][1][0]+self.position[0], config[0][1][1]+self.position[1])) for config in configuration]
         
         # The resources on the catan board
-        self.m_resources = [config[1] for config in configuration]
+        self.resources = [config[1] for config in configuration]
         # The numbers on the catan board
-        self.m_numbers = [config[2] for config in configuration]
+        self.numbers = [config[2] for config in configuration]
         # Position of the deseret tile
-        self.m_desertPosition = self.LoadDesert()
+        self.desert_position = self.load_desert()
 
         # Setting the location of the resources and numbers via the spaces they currently occupy
         # IE how they match up to the board
-        for i, config in enumerate(self.m_resources):
-            config.UpdatePosition(self.m_emptySpaces[i].m_shape.xy)
+        for i, config in enumerate(self.resources):
+            config.update_position(self.empty_spaces[i].shape.xy)
                 
-            self.m_numbers[i].UpdatePosition(self.m_emptySpaces[i].m_shape.xy)
+            self.numbers[i].update_position(self.empty_spaces[i].shape.xy)
         
         # Remove the desert number tile of 0
-        desertNumber = [x for x in self.m_numbers if x.m_shape.center == self.m_desertPosition][0]
-        self.m_numbers.remove(desertNumber)
+        desert_number = [x for x in self.numbers if x.shape.center == self.desert_position][0]
+        self.numbers.remove(desert_number)
         
         # Empty variables which will get populated later
-        self.m_resourceDeque = deque()
-        self.m_numberDeque = deque()
+        self.resource_deque = deque()
+        self.number_deque = deque()
         
     # Remove numbers from an already set board randomly
-    def RemoveNumbers(self):
-        removalPositionsX = []
-        removalPositionsY = []
-        while len(self.m_numbers) != 0:
-            randomNumber = random.choice(self.m_numbers)
-            self.m_numbers.remove(randomNumber)
-            self.m_numberDeque.append(randomNumber)
+    def remove_numbers(self):
+        removal_positions_x = []
+        removal_positions_y = []
+        while len(self.numbers) != 0:
+            random_number = random.choice(self.numbers)
+            self.numbers.remove(random_number)
+            self.number_deque.append(random_number)
             
-            removalPositionsX.append(randomNumber.m_shape.center[0])
-            removalPositionsY.append(randomNumber.m_shape.center[1])
+            removal_positions_x.append(random_number.shape.center[0])
+            removal_positions_y.append(random_number.shape.center[1])
             
-        return removalPositionsX, removalPositionsY
+        return removal_positions_x, removal_positions_y
     
     # Remove resources from an already set board randomly
-    def RemoveResources(self):
-        removalPositionsX = []
-        removalPositionsY = []
-        while len(self.m_resources) != 0:
-            randomResource = random.choice(self.m_resources)
-            self.m_resources.remove(randomResource)
-            self.m_resourceDeque.append(randomResource)
+    def remove_resources(self):
+        removal_positions_x = []
+        removal_positions_y = []
+        while len(self.resources) != 0:
+            random_resource = random.choice(self.resources)
+            self.resources.remove(random_resource)
+            self.resource_deque.append(random_resource)
             
-            removalPositionsX.append(randomResource.m_shape.xy[0])
-            removalPositionsY.append(randomResource.m_shape.xy[1])
+            removal_positions_x.append(random_resource.shape.xy[0])
+            removal_positions_y.append(random_resource.shape.xy[1])
             
-        return removalPositionsX, removalPositionsY
+        return removal_positions_x, removal_positions_y
     
     # Clears the Board
-    def ClearBoard(self):
-        self.RemoveNumbers()
-        self.RemoveResources()
+    def clear_board(self):
+        self.remove_numbers()
+        self.remove_resources()
     
     # Updates the neighbors of a hex given the possible emptyHexes and the placed Hex
-    def UpdateNeighbors(self, hex, emptyHexes):
-        for emptyHex in emptyHexes:
-            if hex.m_name in emptyHex.m_neighbors:
-                emptyHex.m_neighborCount += 1
+    def update_neighbors(self, hex, empty_hexes):
+        for empty_hex in empty_hexes:
+            if hex.name in empty_hex.neighbors:
+                empty_hex.neighbor_count += 1
     
     # I do not update the name of the hex after it was placed, so could not run this multiple times programmatically.
     # Would need to create a new board instance.
-    def PlaceResources(self):
+    def place_resources(self):
         # assuming its completely empty
         # Want to make a deepcopy so we can reuse the empty hexes
-        CopyEmptySpaces = copy.deepcopy(self.m_emptySpaces)
+        copy_empty_spaces = copy.deepcopy(self.empty_spaces)
         
         # Bool to check if desert has been placed yet, avoid recursion
-        desertPlaced = False
+        desert_placed = False
         
-        rescourcePostionsX = []
-        rescourcePostionsY = []
+        rescource_postions_x = []
+        rescource_postions_y = []
             
-        while len(self.m_resourceDeque) != 0:
+        while len(self.resource_deque) != 0:
             # Select random empty tile
-            availableHex = self.SelectEmptyTileWithNeighbors(CopyEmptySpaces)
-            CopyEmptySpaces.remove(availableHex)
+            available_hex = self.select_empty_tile_with_neighbors(copy_empty_spaces)
+            copy_empty_spaces.remove(available_hex)
             
             # Select top of deque
-            removedResource = self.m_resourceDeque.pop()
-            self.UpdateNeighbors(removedResource, CopyEmptySpaces)
+            removed_resource = self.resource_deque.pop()
+            self.update_neighbors(removed_resource, copy_empty_spaces)
             
             # Check if the resource removed was the desert Hex, the update the new position
-            if (removedResource.m_shape.xy == self.m_desertPosition and not desertPlaced):
-                self.m_desertPosition = availableHex.m_shape.xy
-                self.SaveDesert()
-                desertPlaced = True
+            if (removed_resource.shape.xy == self.desert_position and not desert_placed):
+                self.desert_position = available_hex.shape.xy
+                self.save_desert()
+                desert_placed = True
                 
-            removedResource.UpdatePosition(availableHex.m_shape.xy)
+            removed_resource.update_position(available_hex.shape.xy)
             
-            rescourcePostionsX.append(removedResource.m_shape.xy[0])
-            rescourcePostionsY.append(removedResource.m_shape.xy[1])
+            rescource_postions_x.append(removed_resource.shape.xy[0])
+            rescource_postions_y.append(removed_resource.shape.xy[1])
     
-        return rescourcePostionsX, rescourcePostionsY
+        return rescource_postions_x, rescource_postions_y
     
-    def SelectEmptyTile(self, emptySpaces):
-        randomAvailableHex = random.choice(emptySpaces)
-        return randomAvailableHex
+    def select_empty_tile(self, empty_spaces):
+        random_available_hex = random.choice(empty_spaces)
+        return random_available_hex
     
     # Algorithym for choosing where to place a tile
-    def SelectEmptyTileWithNeighbors(self, emptySpaces):
-        emptyAvailableHexes = list(filter(lambda space : space.m_neighborCount >= 2, emptySpaces))
-        randomAvailableHex = random.choice(emptyAvailableHexes)
-        return randomAvailableHex
+    def select_empty_tile_with_neighbors(self, empty_spaces):
+        empty_available_hexes = list(filter(lambda space : space.neighbor_count >= 2, empty_spaces))
+        random_available_hex = random.choice(empty_available_hexes)
+        return random_available_hex
     
     # Same implementation as PlaceResources(). But we can place the numbers in any order
-    def PlaceNumbers(self):
-        CopyEmptySpaces = copy.deepcopy(self.m_emptySpaces)
+    def place_numbers(self):
+        copy_empty_spaces = copy.deepcopy(self.empty_spaces)
         
-        numberPostionsX = []
-        numberPostionsY = []
+        number_postions_x = []
+        number_postions_y = []
         
-        while len(self.m_numberDeque) != 0:
+        while len(self.number_deque) != 0:
             # Select random empty tile
-            availableHex = self.SelectEmptyTile(CopyEmptySpaces)
-            CopyEmptySpaces.remove(availableHex)
-            if availableHex.m_shape.xy != self.m_desertPosition:
-                removedNumber = self.m_numberDeque.pop()
-                removedNumber.UpdatePosition(availableHex.m_shape.xy)
+            available_hex = self.select_empty_tile(copy_empty_spaces)
+            copy_empty_spaces.remove(available_hex)
+            if available_hex.shape.xy != self.desert_position:
+                removed_number = self.number_deque.pop()
+                removed_number.update_position(available_hex.shape.xy)
                 
-                numberPostionsX.append(removedNumber.m_shape.center[0])
-                numberPostionsY.append(removedNumber.m_shape.center[1])
+                number_postions_x.append(removed_number.shape.center[0])
+                number_postions_y.append(removed_number.shape.center[1])
     
-        return numberPostionsX, numberPostionsY
+        return number_postions_x, number_postions_y
     
-    def PlaceBoard(self):
-        self.PlaceResources()
-        self.PlaceNumbers()
+    def place_board(self):
+        self.place_resources()
+        self.place_numbers()
         
-    def LoadDesert(self):
-        f = open('Algorithms\desertPosition.json')
+    def load_desert(self):
+        f = open('src\Algorithms\desertPosition.json')
         data = json.load(f)
         f.close()
         return tuple(data["pos"])
 
-    def SaveDesert(self):
-        with open('Algorithms\desertPosition.json', 'w') as f:
-            json.dump({"pos" :self.m_desertPosition}, f)         
+    def save_desert(self):
+        with open('src\Algorithms\desertPosition.json', 'w') as f:
+            json.dump({"pos" :self.desert_position}, f)         

@@ -1,6 +1,6 @@
 from objects.StandardBoard import StandardSetup
-from Algorithms.imageProcessing import loadImage, analyzeBoard
-from objects.Piece import *
+from Algorithms.imageProcessing import load_image, analyze_board
+from objects.BoardComponents import *
 
 import unittest
 import os
@@ -10,8 +10,8 @@ class CVTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.images = []
-        for file in os.listdir('test\\images\\'):
-            cls.images.extend(['test\\images\\' + file])
+        for file in os.listdir('src\\test\\images\\'):
+            cls.images.extend(['src\\test\\images\\' + file])
     
     @classmethod
     def tearDownClass(cls):
@@ -26,9 +26,9 @@ class CVTest(unittest.TestCase):
     def test_NumberRecognizer(self):
         for image_path in self.images:
             b = StandardSetup()
-            b.m_desertPosition = b.m_emptySpaces[5].m_shape.xy # for testing
-            image = loadImage(image_path)
-            locs = analyzeBoard(b, image)
+            b.desert_position = b.empty_spaces[5].shape.xy # for testing
+            image = load_image(image_path)
+            locs = analyze_board(b, image)
             
             self.assertEqual(len(locs), 18, f'{image_path} does not have 18 numbers')
             
@@ -36,9 +36,9 @@ class CVTest(unittest.TestCase):
         for image_path in self.images:
             if "robber" in image_path:
                 b = StandardSetup()
-                b.m_desertPosition = b.m_emptySpaces[5].m_shape.xy # for testing
-                image = loadImage(image_path)
-                locs = analyzeBoard(b, image, [Robber()])
+                b.desert_position = b.empty_spaces[5].shape.xy # for testing
+                image = load_image(image_path)
+                locs = analyze_board(b, image, [Robber()])
                 
                 self.assertGreaterEqual(len(locs), 1+18, f'{image_path} does not have 1 robber')
             

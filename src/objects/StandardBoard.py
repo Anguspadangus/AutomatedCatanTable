@@ -1,4 +1,4 @@
-from objects.tile import *
+from objects.BoardComponents import *
 from objects.Board import Board
 import math
 

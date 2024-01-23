@@ -1,25 +1,24 @@
 import cv2
 import numpy as np
-from objects.Piece import *
+from objects.BoardComponents import *
 from objects.StandardBoard import StandardSetup
 from objects.Board import Board
-from objects.tile import Number
 
-def thresholdBetweenValues(image, thresh_min, thresh_max):
+def threshold_between_values(image, thresh_min, thresh_max):
     # Finding two thresholds and then finding the common part
     _, threshold = cv2.threshold(image, thresh_min, 255, cv2.THRESH_BINARY)
     _, threshold2 = cv2.threshold(image, thresh_max, 255, cv2.THRESH_BINARY_INV)
     return cv2.bitwise_and(threshold, threshold2)
 
 
-def thresholdInRange(image, threshold_range):
-    return thresholdBetweenValues(image, threshold_range[0], threshold_range[1])
+def threshold_in_range(image, threshold_range):
+    return threshold_between_values(image, threshold_range[0], threshold_range[1])
 
 
-def findBackground(image):
+def find_background(image):
     h, s, v = cv2.split(cv2.cvtColor(image, cv2.COLOR_BGR2HSV))
     blue = [0.5 * 180, 0.65 * 180]
-    background = thresholdInRange(h, blue)
+    background = threshold_in_range(h, blue)
     background = cv2.morphologyEx(background, cv2.MORPH_DILATE, np.ones((7, 7), np.uint8))
     contours, hierarchy = cv2.findContours(background, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
     # Find two biggest contours
@@ -48,11 +47,11 @@ def findBackground(image):
         best_contour = contours[max_area_index]
     return best_contour
 
-def convertImageToSpace(image):
+def convert_image_to_space(image):
     # https://nilesh0109.medium.com/camera-image-perspective-transformation-to-different-plane-using-opencv-5e389dd56527
     pass
 
-def undistortImage(image):
+def undistort_image(image):
     # DIM=XXX
     # K=np.array(YYY)
     # D=np.array(ZZZ)
@@ -61,12 +60,12 @@ def undistortImage(image):
     # undistorted_img = cv2.remap(image, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
     return image
 
-def loadImage(filepath = 'test\\images\\robber1.jpeg'):
+def load_image(filepath = 'src\\test\\images\\robber1.jpeg'):
     image = cv2.imread(filepath)
     return image
 
-def cropToHexes(image, board : Board):
-    centers = [space.m_shape.xy for space in board.m_emptySpaces if space.m_shape.xy != board.m_desertPosition]
+def crop_to_hexes(image, board : Board):
+    centers = [space.shape.xy for space in board.empty_spaces if space.shape.xy != board.desert_position]
     offset = (900, 1100)
     scaler = (200, 200)
     box = (250, 250)
@@ -83,9 +82,9 @@ def cropToHexes(image, board : Board):
         
     return cropped_images
 
-def findNumbers(image, board : Board):
-    cropped_images = cropToHexes(image, board)
-    centers = [space.m_shape.xy for space in board.m_emptySpaces if space.m_shape.xy != board.m_desertPosition]
+def find_numbers(image, board : Board):
+    cropped_images = crop_to_hexes(image, board)
+    centers = [space.shape.xy for space in board.empty_spaces if space.shape.xy != board.desert_position]
     offset = (900, 1100)
     scaler = (200, 200)
     box = (250, 250)
@@ -118,17 +117,17 @@ def findNumbers(image, board : Board):
             
     return positions
 
-def findPiece(piece : Piece, image):
+def find_piece(piece : Piece, image):
     pieces = []
     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv_image, piece.m_color[0], piece.m_color[1])
+    mask = cv2.inRange(hsv_image, piece.color[0], piece.color[1])
     result = cv2.bitwise_and(image, image, mask=mask)
     result = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
     
     contours, _ = cv2.findContours(result, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
     contour_areas = [cv2.contourArea(contour) for contour in contours]
     # Find indices of largest contours
-    indices_of_contours_in_range = [i for i, area in enumerate(contour_areas) if piece.m_area[0] <= area <= piece.m_area[1]]
+    indices_of_contours_in_range = [i for i, area in enumerate(contour_areas) if piece.area[0] <= area <= piece.area[1]]
 
     # Extract the largest contours
     largest_contours = [contours[i] for i in indices_of_contours_in_range]
@@ -150,22 +149,22 @@ def findPiece(piece : Piece, image):
             
     return pieces
 
-def findPieces(pieces, image):
-    pieceList = []
+def find_pieces(pieces, image):
+    piece_list = []
     for p in pieces:
-        pieceList.extend(findPiece(p, image))
+        piece_list.extend(find_piece(p, image))
         
-    return pieceList
+    return piece_list
 
 # need a complete board.
-def maskBoard(image):
-    contour = findBackground(image)
+def mask_board(image):
+    contour = find_background(image)
     mask = np.zeros_like(image)
     cv2.drawContours(mask, contour,-1, (255), thickness=cv2.FILLED)
     
     return mask
 
-def constructHexagon(center, sideLength):
+def construct_hexagon(center, sideLength):
     hexagon_vertices = []
     for i in range(6):
         x = int(center[0] + sideLength * np.cos(i * np.pi / 3))
@@ -174,13 +173,13 @@ def constructHexagon(center, sideLength):
         
     return hexagon_vertices
 
-def HexagonMask(image, board):
+def hexagon_mask(image, board):
     # Define the size of the hexagon
     side_length = 1700
 
     # Calculate the coordinates of the hexagon vertices
     hexagon_center = (int(image.shape[1]/2), int(image.shape[0]/2)+100)  # Example center coordinates
-    hexagon_vertices = constructHexagon(hexagon_center, side_length)
+    hexagon_vertices = construct_hexagon(hexagon_center, side_length)
 
     # Create a black image (initially all zeros) to serve as the mask
     mask = np.zeros_like(image[:, :, 0])
@@ -192,7 +191,7 @@ def HexagonMask(image, board):
     result_image = cv2.bitwise_and(image, image, mask=mask)
     
     # now apply to every single hex
-    centers = [space.m_shape.xy for space in board.m_emptySpaces if space.m_shape.xy != board.m_desertPosition]
+    centers = [space.shape.xy for space in board.empty_spaces if space.shape.xy != board.desert_position]
     offset = (900, 1100)
     scaler = (200, 200)
     
@@ -202,7 +201,7 @@ def HexagonMask(image, board):
         
     return result_image
 
-def displayOnImage(cords, image):
+def display_on_image(cords, image):
     for cord in cords:
         image = cv2.circle(image, cord[1], 20, (255, 0, 0), 10)
         
@@ -211,29 +210,29 @@ def displayOnImage(cords, image):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     
-def analyzeBoard(board, image, pieces = []):
-    image = undistortImage(image)
-    treated_image = HexagonMask(image, board)
+def analyze_board(board, image, pieces = []):
+    image = undistort_image(image)
+    treated_image = hexagon_mask(image, board)
     robber = None
     for i, obj in enumerate(pieces):
         if isinstance(obj, Robber):
             robber = pieces.pop(i)
-    locs = findPieces(pieces, treated_image)
+    locs = find_pieces(pieces, treated_image)
     if robber is not None:
-        locs.extend(findPieces([robber], image))
+        locs.extend(find_pieces([robber], image))
         
-    locs.extend(findNumbers(image, board))
+    locs.extend(find_numbers(image, board))
     
     return locs
 
 
 if __name__ == "__main__":
     b = StandardSetup()
-    b.m_desertPosition = b.m_emptySpaces[5].m_shape.xy # for testing
-    image = loadImage()
+    b.desert_position = b.empty_spaces[5].shape.xy # for testing
+    image = load_image()
     pieces = [Road('red'), Settlememt('red'), City('red'),
             Road('blue'), Settlememt('blue'), City('blue'),
             Road('white'), Settlememt('white'), City('white'),
             Road('orange'), Settlememt('orange'), City('orange'), Robber()]
-    locs = analyzeBoard(b, image, pieces)
-    displayOnImage(locs, image)
+    locs = analyze_board(b, image, pieces)
+    display_on_image(locs, image)
