@@ -1,33 +1,57 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Jan 22 22:34:27 2024
+
+@author: Owen Porpora
+"""
+
 import time
 import board
 from adafruit_motorkit import MotorKit
 from adafruit_motor import stepper
 
 # Input distance (positive or negative)
-input_distance = int(input("Enter distance in centimeters: "))
+x_new = int(input("Enter distance in milimeters: "))
 
 # Constants
-step_angle = 1.8  # Step angle in degrees
-distance_per_step = 0.1  # Distance moved per step in cm
+step_angle = 1.8          # Step angle in degrees
+distance_per_step = 0.2   # Distance moved per step in mm
+
+#current gantry postion varible 
+#Current position of the gantry
+current_position = {'x': 0}
 
 # Calculate steps based on distance and step angle
 # Calculate steps based on input distance
-steps = int(input_distance / distance_per_step)
+steps_per_rotaion = (360 / 1.8)
+steps = int(x_new / distance_per_step) #steps needed to move to x_new
 
 # Initialize MotorKit
 kit = MotorKit(i2c=board.I2C())
+    
+# Function to move to a specific (x, y) coordinate
+def move_to(x):
+    global current_position
 
-# Move forward or backward based on the sign of the input distance
-#make sure to note the ports that you are using to drive each motor
-if input_distance > 0:
-    # Move forward
-    for i in range(abs(steps)):
-        kit.stepper2.onestep()
-        time.sleep(0.01)
-elif input_distance < 0:
-    # Move backward
-    for j in range(abs(steps)):
-        kit.stepper2.onestep(direction=stepper.BACKWARD)
-        time.sleep(0.01)
-else:
-    print("Input distance should be non-zero.")
+    # Calculate the relative movement required for both X and Y axes
+    x_distance = x_new - current_position['x']
+    #y_distance = y_new - current_position['y']
+    print("the change of distance is", x_distance)
+    
+    # Move both X axis motors simultaneously
+    if x_distance > 0:
+        # Move forward
+        for i in range(abs(steps)):
+            kit.stepper2.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)  
+            time.sleep(0.01)
+    elif x_distance < 0:
+        # Move backward
+        for j in range(abs(steps)):
+            kit.stepper2.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
+            time.sleep(0.01)
+    else:
+        print("Input distance should be non-zero.")
+        
+    #Update the current position
+    current_position['x'] = x_new
+    #current_position['y'] = y_new
