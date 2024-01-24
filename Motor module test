@@ -1,21 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Jan 22 22:34:27 2024
+Created on Wed Jan 24 11:44:12 2024
 
 @author: Owen Porpora
 """
+
 import time
 import board
 from adafruit_motorkit import MotorKit
 from adafruit_motor import stepper
-#POSTIVE MOTOR INPUTS GO TOWARDS THE CINCY FLAG
-# Input distance (positive or negative)
-new_x = int(input("Enter distance in millimeters: "))
 
 # Constants
 track_length = 1000
-start_track = 0  
 distance_per_step = 0.2  # Distance moved per step in mm
+start_track = 0  # Starting position of the rail system
 
 # Load current position from file
 try:
@@ -27,20 +25,23 @@ except FileNotFoundError:
 # Initialize MotorKit
 kit = MotorKit(i2c=board.I2C())
     
-# Function to move to a specific (x, y) coordinate
+# Function to move to a specific (x) coordinate
 def move_to(new_x):
     global current_position
-    print(f"Last X position: {current_position['x']} mm")
+    print(f"Last X position was loaction: {current_position['x']} mm")
+
+    # Bound new_x within track limits
+    new_x = max(start_track, min(new_x, track_length))
 
     # Calculate the relative movement required for X
     x_distance = new_x - current_position['x']
     
-    print(f"delta X: {x_distance} mm")
+    print(f"delta X is: {x_distance} mm")
 
     # Calculate the number of steps required for X
     x_steps = int(abs(x_distance) / distance_per_step)
 
-    # Move both X and Y motors simultaneously
+    # Move both X axis motors simultaneously
     if x_distance > 0:
         # Move forward
         for i in range(x_steps):
@@ -54,14 +55,16 @@ def move_to(new_x):
     else:
         print("Delta X is zero, no need to move")
         
-    # Update the current position
-    current_position['x'] += x_distance
-    print(f"updated X position: {current_position['x']} mm")
+   # Update the current position
+    current_position['x'] = new_x
+    print(f"Updated X position: {current_position['x']} mm")
 
     # Save current position to file
     with open("current_position.txt", "w") as file:
         file.write(str(current_position['x']))
 
+# Input absolute position on the rail system
+new_x = int(input("Enter goal position in millimeters:"))
+
 # Call the function with the user-input
 move_to(new_x)
-
