@@ -4,22 +4,25 @@ Created on Mon Jan 22 22:34:27 2024
 
 @author: Owen Porpora
 """
-
 import time
 import board
 from adafruit_motorkit import MotorKit
 from adafruit_motor import stepper
-
+#POSTIVE MOTOR INPUTS GO TOWARDS THE CINCY FLAG
 # Input distance (positive or negative)
-new_x = int(input("Enter distance in milimeters: "))
+new_x = int(input("Enter distance in millimeters: "))
 
 # Constants
 track_length = 1000
 start_track = 0  
 distance_per_step = 0.2  # Distance moved per step in mm
 
-#current gantry postion varible 
-current_position = {'x': 0}
+# Load current position from file
+try:
+    with open("current_position.txt", "r") as file:
+        current_position = {'x': int(file.read())}
+except FileNotFoundError:
+    current_position = {'x': 0}
 
 # Initialize MotorKit
 kit = MotorKit(i2c=board.I2C())
@@ -27,33 +30,25 @@ kit = MotorKit(i2c=board.I2C())
 # Function to move to a specific (x, y) coordinate
 def move_to(new_x):
     global current_position
-    print(f"New X position: {current_position['x']} mm")
+    print(f"Last X position: {current_position['x']} mm")
 
-    # Calculate the relative movement required for both X
-    # Bound x_distance within specified limits
-    x_distance = max(start_track, min(new_x, track_length)) - current_position['x']
+    # Calculate the relative movement required for X
+    x_distance = new_x - current_position['x']
     
-    #x_distance = new_x - current_position['x']
-    #y_travel = y - current_position['y']
-    # Store the original x_distance before bounding
-    #original_x_distance = x_distance
-    # Bound x_distance within specified limits
-    #x_distance = max(start_track, min(original_x_distance, track_length))
-    print(f"Relative X: {x_distance} mm")
+    print(f"delta X: {x_distance} mm")
 
-    # Calculate the number of steps required for  X 
+    # Calculate the number of steps required for X
     x_steps = int(abs(x_distance) / distance_per_step)
-    #y_steps = int(y_distance + steps)
 
     # Move both X and Y motors simultaneously
     if x_distance > 0:
         # Move forward
-        for i in range(abs(x_steps)):
+        for i in range(x_steps):
             kit.stepper2.onestep(direction=stepper.FORWARD, style=stepper.DOUBLE)  
             time.sleep(0.0001)
     elif x_distance < 0:
         # Move backward
-        for j in range(abs(x_steps)):
+        for j in range(x_steps):
             kit.stepper2.onestep(direction=stepper.BACKWARD, style=stepper.DOUBLE)
             time.sleep(0.0001)
     else:
@@ -61,14 +56,12 @@ def move_to(new_x):
         
     # Update the current position
     current_position['x'] += x_distance
-    print(f"New X position: {current_position['x']} mm")
-    #current_position['y'] = y
+    print(f"updated X position: {current_position['x']} mm")
 
-    # Wait for both motors to complete their movements
-    #while kit.stepper1.isBusy() or kit.stepper2.isBusy():
-    #   time.sleep(0.1)
-    
-#call the function with the user-input
+    # Save current position to file
+    with open("current_position.txt", "w") as file:
+        file.write(str(current_position['x']))
+
+# Call the function with the user-input
 move_to(new_x)
-
 
