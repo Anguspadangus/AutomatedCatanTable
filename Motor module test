@@ -1,3 +1,4 @@
+
 """
 Created on Wed Jan 24 13:11:28 2024
 @author: Owen Porpora
@@ -53,6 +54,7 @@ def move_to(new_x):
                 # Switch to microstepping for the last 5 steps
                 if i == x_steps - 5:
                     for w in range(5):
+                        print("swithched to Mircostepping")
                         kit.stepper2.onestep(direction=stepper.FORWARD, style=stepper.MICROSTEP)
                         time.sleep(0.0001)
         except Exception as e:
@@ -68,7 +70,8 @@ def move_to(new_x):
                 # Switch to microstepping for the last 5 steps
                 if j == x_steps - 5:
                     for z in range(5):
-                        kit.stepper2.onestep(direction=stepper.FORWARD, style=stepper.MICROSTEP)
+                        print("swithched to Mircostepping")
+                        kit.stepper2.onestep(direction=stepper.BACKWARD, style=stepper.MICROSTEP)
                         time.sleep(0.0001)
         except Exception as e:
             print(f"Error during motor movement: {e}")
