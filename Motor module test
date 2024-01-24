@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-Created on Wed Jan 24 11:44:12 2024
-
+Created on Wed Jan 24 13:11:28 2024
 @author: Owen Porpora
 """
 
@@ -21,6 +19,9 @@ try:
         current_position = {'x': int(file.read())}
 except FileNotFoundError:
     current_position = {'x': 0}
+except Exception as e:
+    print(f"Error reading current position file: {e}")
+    # Handle the error or exit the program
 
 # Initialize MotorKit
 kit = MotorKit(i2c=board.I2C())
@@ -28,7 +29,7 @@ kit = MotorKit(i2c=board.I2C())
 # Function to move to a specific (x) coordinate
 def move_to(new_x):
     global current_position
-    print(f"Last X position was loaction: {current_position['x']} mm")
+    print(f"Last X position was location: {current_position['x']} mm")
 
     # Bound new_x within track limits
     new_x = max(start_track, min(new_x, track_length))
@@ -44,27 +45,54 @@ def move_to(new_x):
     # Move both X axis motors simultaneously
     if x_distance > 0:
         # Move forward
-        for i in range(x_steps):
-            kit.stepper2.onestep(direction=stepper.FORWARD, style=stepper.DOUBLE)  
-            time.sleep(0.0001)
+        try:
+            for i in range(x_steps):
+                kit.stepper2.onestep(direction=stepper.FORWARD, style=stepper.DOUBLE)
+                time.sleep(0.0001)
+
+                # Switch to microstepping for the last 5 steps
+                if i == x_steps - 5:
+                    for w in range(5):
+                        kit.stepper2.onestep(direction=stepper.FORWARD, style=stepper.MICROSTEP)
+                        time.sleep(0.0001)
+        except Exception as e:
+            print(f"Error during motor movement: {e}")
+            # Handle the error or exit the program
     elif x_distance < 0:
         # Move backward
-        for j in range(x_steps):
-            kit.stepper2.onestep(direction=stepper.BACKWARD, style=stepper.DOUBLE)
-            time.sleep(0.0001)
+        try:
+            for j in range(x_steps):
+                kit.stepper2.onestep(direction=stepper.BACKWARD, style=stepper.DOUBLE)
+                time.sleep(0.0001)
+
+                # Switch to microstepping for the last 5 steps
+                if j == x_steps - 5:
+                    for z in range(5):
+                        kit.stepper2.onestep(direction=stepper.FORWARD, style=stepper.MICROSTEP)
+                        time.sleep(0.0001)
+        except Exception as e:
+            print(f"Error during motor movement: {e}")
+            # Handle the error or exit the program
     else:
         print("Delta X is zero, no need to move")
         
-   # Update the current position
+    # Update the current position
     current_position['x'] = new_x
     print(f"Updated X position: {current_position['x']} mm")
 
     # Save current position to file
-    with open("current_position.txt", "w") as file:
-        file.write(str(current_position['x']))
+    try:
+        with open("current_position.txt", "w") as file:
+            file.write(str(current_position['x']))
+    except Exception as e:
+        print(f"Error writing current position file: {e}")
+        # Handle the error or exit the program
 
-# Input absolute position on the rail system
-new_x = int(input("Enter goal position in millimeters:"))
+# Input a list of absolute positions on the rail system
+positions_list = input("Enter a list of positions (comma-separated) in millimeters: ").split(',')
+positions_list = [int(position) for position in positions_list]
 
-# Call the function with the user-input
-move_to(new_x)
+# Move to each position in the list sequentially
+for new_x in positions_list:
+    move_to(new_x)
+    time.sleep(5)  # Wait for 5 seconds between movements
