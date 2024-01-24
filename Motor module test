@@ -27,6 +27,7 @@ kit = MotorKit(i2c=board.I2C())
 # Function to move to a specific (x, y) coordinate
 def move_to(new_x):
     global current_position
+    print(f"New X position: {current_position['x']} mm")
 
     # Calculate the relative movement required for both X
     # Bound x_distance within specified limits
@@ -38,7 +39,7 @@ def move_to(new_x):
     #original_x_distance = x_distance
     # Bound x_distance within specified limits
     #x_distance = max(start_track, min(original_x_distance, track_length))
-    
+    print(f"Relative X: {x_distance} mm")
 
     # Calculate the number of steps required for  X 
     x_steps = int(abs(x_distance) / distance_per_step)
@@ -60,6 +61,7 @@ def move_to(new_x):
         
     # Update the current position
     current_position['x'] += x_distance
+    print(f"New X position: {current_position['x']} mm")
     #current_position['y'] = y
 
     # Wait for both motors to complete their movements
