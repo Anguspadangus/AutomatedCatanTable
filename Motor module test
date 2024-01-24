@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jan 23 18:20:04 2024
+Created on Mon Jan 22 22:34:27 2024
 
 @author: Owen Porpora
 """
@@ -11,57 +11,62 @@ from adafruit_motorkit import MotorKit
 from adafruit_motor import stepper
 
 # Input distance (positive or negative)
-x_new = int(input("Enter distance in millimeters: "))
+new_x = int(input("Enter distance in milimeters: "))
 
 # Constants
-step_angle = 1.8          # Step angle in degrees
-distance_per_step = 0.2   # Distance moved per step in mm
+track_length = 1000
+start_track = 0  
+distance_per_step = 0.2  # Distance moved per step in mm
 
-# Total distance the gantry can move (replace with actual total distance)
-total_distance = 100
-
-# Total steps in one rotation of the stepper motor (replace with actual total steps)
-total_steps = 200
-
-# Current position of the gantry
+#current gantry postion varible 
 current_position = {'x': 0}
-
 
 # Initialize MotorKit
 kit = MotorKit(i2c=board.I2C())
-
+    
 # Function to move to a specific (x, y) coordinate
-def move_to(x):
+def move_to(new_x):
     global current_position
 
-    # Calculate the relative movement required for the X axis
-    x_distance = x - current_position['x']
-    print("The change of distance is", x_distance)
+    # Calculate the relative movement required for both X
+    # Bound x_distance within specified limits
+    x_distance = max(start_track, min(new_x, track_length)) - current_position['x']
+    
+    #x_distance = new_x - current_position['x']
+    #y_travel = y - current_position['y']
+    # Store the original x_distance before bounding
+    #original_x_distance = x_distance
+    # Bound x_distance within specified limits
+    #x_distance = max(start_track, min(original_x_distance, track_length))
+    
 
-    # Calculate the number of steps required to move to the new position
-    x_steps = int((x_distance / total_distance))
+    # Calculate the number of steps required for  X 
+    x_steps = int(abs(x_distance) / distance_per_step)
+    #y_steps = int(y_distance + steps)
 
-    # Move the X axis motor
+    # Move both X and Y motors simultaneously
     if x_distance > 0:
         # Move forward
         for i in range(abs(x_steps)):
-            kit.stepper2.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
-            time.sleep(0.01)
+            kit.stepper2.onestep(direction=stepper.FORWARD, style=stepper.DOUBLE)  
+            time.sleep(0.0001)
     elif x_distance < 0:
         # Move backward
         for j in range(abs(x_steps)):
-            kit.stepper2.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
-            time.sleep(0.01)
+            kit.stepper2.onestep(direction=stepper.BACKWARD, style=stepper.DOUBLE)
+            time.sleep(0.0001)
     else:
-        print("Input distance should be non-zero.")
-
+        print("Delta X is zero, no need to move")
+        
     # Update the current position
-    current_position['x'] = x
+    current_position['x'] += x_distance
+    #current_position['y'] = y
 
-    # Wait for the motor to complete its movement
-    while kit.stepper2.is_busy:
-        time.sleep(0.1)
+    # Wait for both motors to complete their movements
+    #while kit.stepper1.isBusy() or kit.stepper2.isBusy():
+    #   time.sleep(0.1)
+    
+#call the function with the user-input
+move_to(new_x)
 
-# Assuming kit.stepper2 is the motor you want to control
-move_to(x_new)
 
