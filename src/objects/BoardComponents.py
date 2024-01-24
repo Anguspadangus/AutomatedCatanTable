@@ -1,8 +1,9 @@
 from matplotlib.patches import RegularPolygon, Circle
 
 class Suckable():
-    def __init__(self, suction_type = None):
+    def __init__(self, height, suction_type = None):
         self.suction_type = suction_type
+        self.height = height
         
 class Piece(Suckable):
     # Class static, defines range for colors
@@ -13,10 +14,9 @@ class Piece(Suckable):
                         'white': [(100,30,200), (150,60,255)]}
     
     def __init__(self, height, color, area):
-        self.height = height
         self.color = Piece.__color_dictionary[color]
         self.area = area
-        super().__init__('universal')
+        super().__init__(height, 'universal')
         
 class Robber(Piece):
     def __init__(self):
@@ -38,10 +38,9 @@ class Settlememt(Piece):
 
 # Base class of all Catan tiles. Has a shape and a color.
 class Tile(Suckable):
-    def __init__(self, shape):
+    def __init__(self, shape, height = 0):
         self.shape = shape
-        self.height = 0
-        super().__init__('cup')
+        super().__init__(height, 'cup')
         return
     
     def update_position(self, xy):
@@ -50,12 +49,11 @@ class Tile(Suckable):
         else:
             self.shape.xy = xy
 
-# Resource Hex, has a hexagonal radius, a name (like desert) and a center position
+# Resource Hex, has a hexagonal radius, a name, and a center position
 class Hex(Tile):
     def __init__(self, name, radius, center = (0,0)):
-        super().__init__(RegularPolygon(center, 6, radius=radius))
+        super().__init__(RegularPolygon(center, 6, radius=radius), 1)
         self.name = name
-        self.height = 1 # mm
     
 # The possible locations in a catan set for a resource card to be placed
 # Uses neighbors to determine if a hex can be placed, 0 represents border
@@ -83,5 +81,23 @@ class EmptyHex(Tile):
            
 class Number(Tile):
     def __init__(self, radius):
-        super().__init__(Circle((0,0), radius=radius))
-        self.height = 1 #mm
+        super().__init__(Circle((0,0), radius=radius), 1)
+
+# Stack of tiles to be manipulated with 
+class TileStack():
+    def __init__(self, position):
+        self.position = position
+        self.stack_height = 0
+        self.stack = []
+        
+    def push(self, tile):
+        self.stack.append(tile)
+        self.stack_height += tile.height
+        
+    def pop(self):
+        tile = self.stack.pop()
+        self.stack_height -= tile.height
+        return tile
+    
+    def __len__(self):
+        return len(self.stack)
