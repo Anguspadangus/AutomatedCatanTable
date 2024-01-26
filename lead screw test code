@@ -5,44 +5,39 @@ Created on Thu Jan 25 20:40:20 2024
 @author: Owen Porpora
 """
 
-import RPi.GPIO as gpio
 import time
+from RpiMotorLib import RpiMotorLib
 
 # Define your pin assignments
 MOTOR_DIRECTION_PIN = 20  # DIR
 MOTOR_STEP_PIN = 21  # STP
+GPIO_pins = (14, 15, 18)  # Microstep Resolution MS1-MS3 -> GPIO Pin
 
 def setup_gpio():
-    gpio.setmode(gpio.BCM)
-    gpio.setup(MOTOR_DIRECTION_PIN, gpio.OUT)  # Direction
-    gpio.setup(MOTOR_STEP_PIN, gpio.OUT)       # Step
+    motor = RpiMotorLib.A4988Nema(MOTOR_DIRECTION_PIN, MOTOR_STEP_PIN, *GPIO_pins, 1.5, "DRV8825")
 
 def set_direction(direction):
     if direction == 'left':
-        gpio.output(MOTOR_DIRECTION_PIN, True)
+        motor.motor_go(False, "Full", 50, 0.01, False, 10)
     elif direction == 'right':
-        gpio.output(MOTOR_DIRECTION_PIN, False)
+        motor.motor_go(True, "Full", 50, 0.01, False, 10)
 
-def step_motor(steps, wait_time=0.005):
-    step_counter = 0
-    while step_counter < steps:
-        gpio.output(MOTOR_STEP_PIN, True)
-        gpio.output(MOTOR_STEP_PIN, False)
-        step_counter += 1
-        time.sleep(wait_time)
+def step_motor(steps):
+    motor.motor_go(True, "Full", 50, 0.01, False, steps)
 
 def cleanup_gpio():
-    gpio.cleanup()
+    motor.motor_stop()
 
 def main():
     try:
+        setup_gpio()
+
         direction = input("Enter direction (left/right): ").lower()
         steps = int(input("Enter the number of steps: "))
-        
-        setup_gpio()
+
         set_direction(direction)
         step_motor(steps)
-        
+
     except ValueError:
         print("Invalid input. Please enter a valid number of steps.")
     except KeyboardInterrupt:
