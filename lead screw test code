@@ -101,3 +101,10 @@ if __name__ == '__main__':
 
 
 # =====================END===============================
+
+
+
+curl -sL https://github.com/gavinlyonsrepo/RpiMotorLib/archive/3.2.tar.gz | tar xz
+cd RpiMotorLib-3.2
+python3 setup.py build 
+python3 setup.py install --user
