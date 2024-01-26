@@ -5,6 +5,9 @@ import RPi.GPIO as GPIO
 MOTOR_DIRECTION_PIN = 20  # DIR
 MOTOR_STEP_PIN = 21  # STP
 
+# Constants
+distance_per_step = 0.2  # Distance moved per step in mm
+
 def setup_gpio():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(MOTOR_DIRECTION_PIN, GPIO.OUT)  # Direction
@@ -20,10 +23,11 @@ def set_direction(direction):
         return
 
 def step_motor(steps, step_delay=0.0005):
-    GPIO.output(MOTOR_STEP_PIN, GPIO.HIGH)
-    time.sleep(step_delay)
-    GPIO.output(MOTOR_STEP_PIN, GPIO.LOW)
-    time.sleep(step_delay)
+    for _ in range(steps):
+        GPIO.output(MOTOR_STEP_PIN, GPIO.HIGH)
+        time.sleep(step_delay)
+        GPIO.output(MOTOR_STEP_PIN, GPIO.LOW)
+        time.sleep(step_delay)
 
 def cleanup_gpio():
     GPIO.cleanup()
@@ -33,12 +37,17 @@ def main():
         setup_gpio()
 
         direction = input("Enter direction (up/down): ").lower()
-        
+        distance = float(input("Enter distance in millimeters: "))
+
         set_direction(direction)
 
-        for _ in range(20200):  # Adjust the number of steps as needed
-            step_motor(1)
+        # Calculate the number of steps required based on distance
+        steps = int(abs(distance) / distance_per_step)
 
+        step_motor(steps)
+
+    except ValueError:
+        print("Invalid input. Please enter a valid distance.")
     except KeyboardInterrupt:
         print("Program interrupted by the user.")
     finally:
