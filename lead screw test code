@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jan 25 20:40:20 2024
-
-@author: Owen Porpora
-"""
-
 import time
 from RpiMotorLib import RpiMotorLib
 
@@ -13,12 +6,9 @@ MOTOR_DIRECTION_PIN = 20  # DIR
 MOTOR_STEP_PIN = 21  # STP
 GPIO_pins = (14, 15, 18)  # Microstep Resolution MS1-MS3 -> GPIO Pin
 
-# Declare motor as a global variable
-motor = None
-
 def setup_gpio():
     global motor
-    motor = RpiMotorLib.A4988Nema(MOTOR_DIRECTION_PIN, MOTOR_STEP_PIN, *GPIO_pins, 1.5, "DRV8825")
+    motor = RpiMotorLib.A4988Nema(MOTOR_DIRECTION_PIN, MOTOR_STEP_PIN, *GPIO_pins)
 
 def set_direction(direction):
     if direction == 'left':
@@ -51,4 +41,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
