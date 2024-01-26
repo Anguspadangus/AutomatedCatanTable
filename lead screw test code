@@ -5,49 +5,50 @@ Created on Thu Jan 25 20:40:20 2024
 @author: Owen Porpora
 """
 
+#!/usr/bin/env python3
+""" test example file for rpiMotorlib.py A4988 NEMA"""
+
 import time
+import RPi.GPIO as GPIO
+# Production installed library import
 from RpiMotorLib import RpiMotorLib
 
-# Define your pin assignments
-MOTOR_DIRECTION_PIN = 20  # DIR
-MOTOR_STEP_PIN = 21  # STP
-GPIO_pins = (14, 15, 18)  # Microstep Resolution MS1-MS3 -> GPIO Pin
-
-# Declare motor as a global variable
-motor = None
-
-def setup_gpio():
-    global motor
-    motor = RpiMotorLib.A4988Nema(MOTOR_DIRECTION_PIN, MOTOR_STEP_PIN, GPIO_pins, "Full")
-
-def set_direction(direction):
-    if direction == 'left':
-        motor.motor_go(False, "Full", 50, 0.01, False, 10)
-    elif direction == 'right':
-        motor.motor_go(True, "Full", 50, 0.01, False, 10)
-
-def step_motor(steps):
-    motor.motor_go(True, "Full", 50, 0.01, False, steps)
-
-def cleanup_gpio():
-    motor.motor_stop()
-
 def main():
+    """main function loop"""
+    
+    # Microstep Resolution MS1-MS3 -> GPIO Pin , can be set to (-1,-1,-1) to turn off 
+    GPIO_pins = (14, 15, 18)  
+    direction_pin = 20       # Direction -> GPIO Pin
+    step_pin = 21      # Step -> GPIO Pin
+    
+    # Declare an named instance of class pass GPIO-PINs
+    my_motor = RpiMotorLib.A4988Nema(direction_pin, step_pin, GPIO_pins, "A4988")
+    
+    # ====================== Single User-Driven Test ===================
+    print("SINGLE USER-DRIVEN TEST")
+    
     try:
-        setup_gpio()
-
+        # Get user input
         direction = input("Enter direction (left/right): ").lower()
         steps = int(input("Enter the number of steps: "))
-
-        set_direction(direction)
-        step_motor(steps)
-
+        
+        # Set direction
+        if direction == 'left':
+            my_motor.motor_go(False, "Full", steps, 0.01, True, 0.01)
+        elif direction == 'right':
+            my_motor.motor_go(True, "Full", steps, 0.01, True, 0.01)
+        else:
+            print("Invalid direction. Please enter 'left' or 'right'.")
+    
     except ValueError:
         print("Invalid input. Please enter a valid number of steps.")
     except KeyboardInterrupt:
         print("Program interrupted by the user.")
     finally:
-        cleanup_gpio()
+        # Cleanup GPIO
+        GPIO.cleanup()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    print("TEST START")
     main()
+    print("TEST END")
