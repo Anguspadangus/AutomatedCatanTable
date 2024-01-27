@@ -1,14 +1,15 @@
 from objects.TableComponents import SingleDegreeComponent, CameraRig
 from objects.Gantry import Gantry
-from objects.Board import Board
+from objects.BoardComponents import *
 
 class Table():
-    def __init__(self, gantry: Gantry, camera: CameraRig, lift: SingleDegreeComponent, cover: SingleDegreeComponent, catan_board: Board):
+    def __init__(self, gantry: Gantry, camera: CameraRig, lift: SingleDegreeComponent, cover: SingleDegreeComponent):
         self.gantry = gantry
         self.camera = camera
         self.lift = lift
         self.cover = cover
-        self.catan_board = catan_board
+        self.hex_stack = []
+        self.number_stack = []
         
     def run(self):
         # drop lift

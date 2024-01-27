@@ -1,5 +1,6 @@
 from objects.Motor import *
 from objects.BoardComponents import *
+from objects.Board import Board
 
 class PumpAssembly():
     def __init__(self, valve: DCMotor, intake: DCMotor, outtake: DCMotor = None):
@@ -55,10 +56,11 @@ class Mount():
         
 
 class Gantry():
-    def __init__(self, x_motor: Motor, y_motor: Motor, mount: Mount):
+    def __init__(self, x_motor: Motor, y_motor: Motor, mount: Mount, catan_board: Board):
         self.x_motor_1 = x_motor
         self.y_motor = y_motor
         self.mount = mount
+        self.catan_board = catan_board
         
     def move_to(self, location):
         # https://github.com/adafruit/Adafruit_Motor_Shield_V2_Library/blob/master/examples/Accel_MultiStepper/Accel_MultiStepper.ino

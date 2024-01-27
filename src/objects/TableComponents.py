@@ -1,8 +1,8 @@
-from objects.Motor import Motor
+from objects.Motor import *
 
 # Such as the lift and the cover
 class SingleDegreeComponent():
-    def __init__(self, motor : Motor, maximum_value, minimum_value = 0):
+    def __init__(self, motor : Stepper, maximum_value, minimum_value = 0):
         self.motor = motor
         self.maximum_value = maximum_value
         self.minimum_value = minimum_value
@@ -14,7 +14,7 @@ class SingleDegreeComponent():
         self.motor.move_to(self.minimum_value)
         
 class CameraRig():
-    def __init__(self, camera, light):
+    def __init__(self, camera : DCMotor, light: DCMotor):
         self.camera = camera
         self.light = light
         
