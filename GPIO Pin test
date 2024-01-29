@@ -1,0 +1,29 @@
+import RPi.GPIO as GPIO
+
+# Set the GPIO pin
+USER_GPIO_PIN = 16  # You can change this to the desired GPIO pin number
+
+# Set up GPIO
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(USER_GPIO_PIN, GPIO.OUT)
+
+try:
+    while True:
+        # Get user input
+        user_input = input("Enter 'high' to set the pin high, 'low' to set it low, or 'exit' to end: ").lower()
+
+        if user_input == 'high':
+            GPIO.output(USER_GPIO_PIN, GPIO.HIGH)
+            print(f"GPIO Pin {USER_GPIO_PIN} set HIGH.")
+        elif user_input == 'low':
+            GPIO.output(USER_GPIO_PIN, GPIO.LOW)
+            print(f"GPIO Pin {USER_GPIO_PIN} set LOW.")
+        elif user_input == 'exit':
+            break
+        else:
+            print("Invalid input. Please enter 'high', 'low', or 'exit'.")
+
+finally:
+    # Clean up GPIO
+    GPIO.cleanup()
+    print("GPIO cleanup complete.")
