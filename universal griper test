@@ -1,27 +1,30 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Jan 27 23:52:01 2024
+Created on Mon Jan 29 17:11:20 2024
 
 @author: Owen Porpora
 """
-
 import RPi.GPIO as GPIO
 from adafruit_motorkit import MotorKit
 import time
+import board
 
-# Create the motor kit object
-kit = MotorKit()
+# Create the MotorKit object, specifying the I2C bus
+kit = MotorKit(i2c=board.I2C())
+
+# Set the GPIO pin for the gate valve
+GATE_VALVE_PIN = 16
 
 def set_gate_valve_low():
-    GPIO.output(16, GPIO.LOW)
+    GPIO.output(GATE_VALVE_PIN, GPIO.LOW)
     print("Gate Valve state low")
 
 def set_gate_valve_high():
-    GPIO.output(16, GPIO.HIGH)
+    GPIO.output(GATE_VALVE_PIN, GPIO.HIGH)
     print("Gate Valve state high")
 
 def run_motor_with_timeout(motor, throttle, duration, action):
-    motor.throttle = 1
+    motor.throttle = throttle
     start_time = time.time()
     print(f"{action} has begun at {time.strftime('%H:%M:%S', time.localtime(start_time))}")
     time.sleep(duration)
@@ -29,29 +32,30 @@ def run_motor_with_timeout(motor, throttle, duration, action):
     end_time = time.time()
     print(f"{action} has finished at {time.strftime('%H:%M:%S', time.localtime(end_time))}. Elapsed time: {end_time - start_time:.2f} seconds")
 
-
-def pick(blow_motor, suck_motor, blow_time, suck_time):
+def pick(blow_motor, suck_motor, blow_time, suck_time, pick_time):
     set_gate_valve_low()
     run_motor_with_timeout(blow_motor, 1, blow_time, "Blowing")
     set_gate_valve_high()
     run_motor_with_timeout(suck_motor, 1, suck_time, "Sucking")
+    time.sleep(pick_time)
 
 try:
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(16, GPIO.OUT)
+    GPIO.setup(GATE_VALVE_PIN, GPIO.OUT)
 
-    blow_time = 0.1  # Example: Blow time in seconds
-    suck_time = 3    # Example: Suck time in seconds
+    #Time values
+    blow_time = 1.0   # Blow time in seconds
+    suck_time = 3.0   # Suck time in seconds
+    pick_time = 10.0  # Pick time in seconds
 
     # Run the sequence once
-    pick(kit.motor_M2, kit.motor_M1, blow_time, suck_time)
-    time.sleep(7)  # Example: Wait for 7 seconds
-
+    pick(kit.motor_M1, kit.motor_M1, blow_time, suck_time, pick_time)
+    
+finally:
     # Clean up GPIO
     GPIO.cleanup()
 
-finally:
     # Turn off the motors in case of an exception
     kit.motor_M1.throttle = 0
-    kit.motor_M2.throttle = 0
+
 
