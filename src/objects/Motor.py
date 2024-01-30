@@ -11,9 +11,8 @@ class MotorKit():
         self.motor_M1 = "M1"
         
 class stepper():
-    def __init__(self):
-        self.FORWARD = "F"
-        self.BAKCWARD = "B"
+    FORWARD = "F"
+    BAKCWARD = "B"
         
 class GPIO():
     BCM = 0
@@ -79,12 +78,43 @@ def HAT_CONTROL(motor, steps):
     
     for i in range(steps):
         # Switch to microstepping for the last 5 steps
-        if i <= 5:
+        if i >= steps - 5:
             motor.onestep(direction=direction, style=stepper.MICROSTEP)
             time.sleep(0.0001)
         else:
             motor.onestep(direction=direction, style=stepper.SINGLE)
             time.sleep(0.0001)
+
+def LINKED_HAT_CONTROL(motor_1, motor_2, steps_1, steps_2):
+    if steps_1 > 0:
+        direction_1 = stepper.FORWARD
+    else:
+        direction_1 = stepper.BAKCWARD
+        
+    if steps_2 > 0:
+        direction_2 = stepper.FORWARD
+    else:
+        direction_2 = stepper.BAKCWARD
+        
+    steps_1 = abs(int(steps_1))
+    steps_2 = abs(int(steps_2))
+    
+    for i in range(max(steps_1, steps_2)):
+        if i <= steps_1:
+            if i >= steps_1 - 5:
+                motor_1.onestep(direction=direction_1, style=stepper.MICROSTEP)
+                time.sleep(0.0001)
+            else:
+                motor_1.onestep(direction=direction_1, style=stepper.SINGLE)
+                time.sleep(0.0001)
+                
+        if i <= steps_2:
+            if i >= steps_2 - 5:
+                motor_2.onestep(direction=direction_2, style=stepper.MICROSTEP)
+                time.sleep(0.0001)
+            else:
+                motor_2.onestep(direction=direction_2, style=stepper.SINGLE)
+                time.sleep(0.0001)
 
 class Motor(ABC):
     
@@ -114,10 +144,10 @@ class Stepper(Motor):
     def move_to(self, value):
         steps = self.position_to_steps(value)
         
-        self.control_function(steps, *self.control_args)
+        self.control_function(self.motor, steps, *self.control_args)
         
         self._set_current_cartisan(value)
-        
+           
     def position_to_steps(self, coordinate):
         return (coordinate - self.current_cartisan) / self.distance_per_step # steps
     
@@ -152,3 +182,26 @@ class DCMotor(Motor):
     
     def load(self, name):
         pass
+    
+class LinkedMotor(Motor):
+    def __init__(self, motor_1, motor_2, linking_function):
+        self.motor_1 = motor_1
+        self.motor_2 = motor_2
+        self.control_function = linking_function
+        
+    def move_to(self, value : list):
+        steps_1 = self.motor_1.position_to_steps(value[0])
+        steps_2 = self.motor_1.position_to_steps(value[1])
+        
+        self.control_function(self.motor_1, self.motor_2, steps_1, steps_2)
+        
+        self.motor_1._set_current_cartisan(value[0])
+        self.motor_2._set_current_cartisan(value[1])
+        
+    def save(self, name_1, name_2):
+        self.motor_1.save(name_1)
+        self.motor_2.save(name_2)
+        
+    def load(self, name_1, name_2):
+        self.motor_1.load(name_1)
+        self.motor_2.load(name_2)
