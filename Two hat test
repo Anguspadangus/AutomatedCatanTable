@@ -1,0 +1,27 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Feb  2 12:33:29 2024
+
+@author: Owen Porpora
+"""
+import time
+import board
+from adafruit_motorkit import MotorKit
+from adafruit_motor import stepper
+# Initialise the first hat on the default address
+kit1 = MotorKit()
+# Initialise the second hat on a different address
+kit2 = MotorKit(0x61)
+
+
+kit2 = MotorKit(i2c=board.I2C(0x61))
+kit1 = MotorKit(i2c=board.I2C(0x60))
+
+for i in range(100):
+    kit1.stepper1.onestep(direction=stepper.BACKWARD, style=stepper.DOUBLE)
+    time.sleep(0.0001)
+    
+for i in range(100):
+    kit2.stepper1.onestep(direction=stepper.FORWARD  , style=stepper.DOUBLE)
+    time.sleep(0.0001)
+    
