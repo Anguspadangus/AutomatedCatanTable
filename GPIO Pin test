@@ -1,29 +1,36 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Feb  2 12:00:39 2024
+
+@author: Owen Porpora
+"""
+
 import RPi.GPIO as GPIO
+import time
 
-# Set the GPIO pin
-USER_GPIO_PIN = 16  # You can change this to the desired GPIO pin number
+# Define the GPIO pin for the gate valve
+GATE_VALVE_PIN = 17 # You should replace this with the actual GPIO pin number you are using
 
-# Set up GPIO
+# Setup GPIO mode
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(USER_GPIO_PIN, GPIO.OUT)
+GPIO.setup(GATE_VALVE_PIN, GPIO.OUT)
 
+def set_gate_valve_low():
+    GPIO.output(GATE_VALVE_PIN, GPIO.LOW)
+    print("Gate Valve state low")
+
+def set_gate_valve_high():
+    GPIO.output(GATE_VALVE_PIN, GPIO.HIGH)
+    print("Gate Valve state high")
+
+# Example usage
 try:
-    while True:
-        # Get user input
-        user_input = input("Enter 'high' to set the pin high, 'low' to set it low, or 'exit' to end: ").lower()
+    set_gate_valve_high()  # Set the gate valve to high
+    time.sleep(10)  # Sleep for 2 seconds
+    set_gate_valve_low()  # Set the gate valve to low
 
-        if user_input == 'high':
-            GPIO.output(USER_GPIO_PIN, GPIO.HIGH)
-            print(f"GPIO Pin {USER_GPIO_PIN} set HIGH.")
-        elif user_input == 'low':
-            GPIO.output(USER_GPIO_PIN, GPIO.LOW)
-            print(f"GPIO Pin {USER_GPIO_PIN} set LOW.")
-        elif user_input == 'exit':
-            break
-        else:
-            print("Invalid input. Please enter 'high', 'low', or 'exit'.")
+except KeyboardInterrupt:
+    print("Script terminated by user")
 
 finally:
-    # Clean up GPIO
-    GPIO.cleanup()
-    print("GPIO cleanup complete.")
+    GPIO.cleanup()  # Clean up GPIO on exit
