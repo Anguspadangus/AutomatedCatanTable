@@ -6,7 +6,6 @@ Created on Thu Feb  1 15:02:56 2024
 """
 
 import time
-import board
 import RPi.GPIO as GPIO
 from adafruit_motorkit import MotorKit
 from adafruit_motor import stepper
@@ -20,14 +19,21 @@ distance_per_step = 0.2  # Distance moved per step in mm
 GATE_VALVE_PIN = 16      # Set the GPIO pin for the gate valve
 blow_time = 1            # Blow time in seconds
 suck_time = 3            # Suck time in seconds
-pick_time = 10           # Pick time in seconds
+move_to_place_time = 10  # Pick time in seconds
 place_x = 25
 place_y = 50
 z_distance = 0
 
+# Define the GPIO pin for the gate valve
+GATE_VALVE_PIN = 17 # You should replace this with the actual GPIO pin number you are using
+
+# Setup GPIO mode
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(GATE_VALVE_PIN, GPIO.OUT)
+
 # Initialize MotorKit
-kit = MotorKit(i2c=board.I2C(0x60))
-kit2 = MotorKit(i2c=board.I2C(0x61))
+kit1 = MotorKit()
+kit2 = MotorKit(address=0x61)
 
 # Load current position from file
 try:
@@ -64,10 +70,20 @@ def set_gate_valve_high():
     GPIO.output(GATE_VALVE_PIN, GPIO.HIGH)
     print("Gate Valve state high")
 
-def pick(suck_time, pick_time):
+def pick(blow_time, suck_time, move_to_place_time):
     try:
         # Set gate valve low
         set_gate_valve_low()
+
+        # Run the blowing motor for the specified blow time
+        kit2.motor3.throttle = 1
+        start_time_blow = time.time()
+        print(f"Blowing has begun at {time.strftime('%H:%M:%S', time.localtime(start_time_blow))}")
+        time.sleep(int(blow_time))
+        end_time_blow = time.time()
+        print(f"Blowing has finished at {time.strftime('%H:%M:%S', time.localtime(end_time_blow))}. Elapsed time: {end_time_blow - start_time_blow:.2f} seconds")
+
+        set_gate_valve_high()
 
         # Run the sucking motor for the specified suck time
         start_time_suck = time.time()
@@ -77,10 +93,11 @@ def pick(suck_time, pick_time):
         print(f"Sucking has finished at {time.strftime('%H:%M:%S', time.localtime(end_time_suck))}. Elapsed time: {end_time_suck - start_time_suck:.2f} seconds")
 
         # Wait for the pick time (motor doesn't shut off during this time)
-        time.sleep(pick_time)
+        #time.sleep(move_to_place_time)
     except Exception as e:
         print(f"Error during pick movement: {e}")
         # Handle the error or exit the program
+
 
 def place():
     try:
@@ -92,13 +109,13 @@ def place():
         set_gate_valve_low()
         
         # Run the blowing motor for the specified blow time
-        kit2.motor1.throttle = 1
+        kit2.motor3.throttle = 1
         start_time_blow = time.time()
         print(f"Blowing has begun at {time.strftime('%H:%M:%S', time.localtime(start_time_blow))}")
         time.sleep(int(blow_time))
         end_time_blow = time.time()
         print(f"Blowing has finished at {time.strftime('%H:%M:%S', time.localtime(end_time_blow))}. Elapsed time: {end_time_blow - start_time_blow:.2f} seconds")
-        kit2.motor1.throttle = 0
+        kit2.motor3.throttle = 0
         
     except Exception as e:
         print(f"Error during Z-axis down movement or blowing: {e}")
@@ -114,7 +131,7 @@ def move_z_axis(kit, distance, distance_per_step=0.2):
 
         # Move the motor in the specified direction
         for i in range(z_steps):
-            kit2.stepper2.onestep(direction=direction, style=stepper.DOUBLE)
+            kit2.stepper1.onestep(direction=direction, style=stepper.DOUBLE)
             time.sleep(0.0001)
     except Exception as e:
         print(f"Error during Z-axis movement: {e}")
@@ -149,16 +166,16 @@ def move_to(new_x, new_y):
         for i in range(max(x_steps, y_steps)):
             if i < x_steps:
                 if x_distance > 0:
-                    kit.stepper1.onestep(direction=stepper.FORWARD, style=stepper.DOUBLE)
+                    kit1.stepper1.onestep(direction=stepper.FORWARD, style=stepper.DOUBLE)
                 elif x_distance < 0:
-                    kit.stepper1.onestep(direction=stepper.BACKWARD, style=stepper.DOUBLE)
+                    kit1.stepper1.onestep(direction=stepper.BACKWARD, style=stepper.DOUBLE)
                 else:
                     print("Motor X does not need to move")
             if i < y_steps:
                 if y_distance > 0:
-                    kit.stepper2.onestep(direction=stepper.FORWARD, style=stepper.DOUBLE)
+                    kit1.stepper2.onestep(direction=stepper.FORWARD, style=stepper.DOUBLE)
                 elif y_distance < 0:
-                    kit.stepper2.onestep(direction=stepper.BACKWARD, style=stepper.DOUBLE)
+                    kit1.stepper2.onestep(direction=stepper.BACKWARD, style=stepper.DOUBLE)
                 else:
                     print("Motor Y does not need to move")
             time.sleep(0.0001)
@@ -172,7 +189,7 @@ def move_to(new_x, new_y):
 
     # Run the pick sequence
     try:
-        pick(suck_time, pick_time)
+        pick(blow_time, suck_time, move_to_place_time)
     except Exception as e:
         print(f"Error during pick sequence: {e}")
         # Handle the error or exit the program
@@ -195,16 +212,16 @@ def move_to(new_x, new_y):
         for i in range(max(x_steps_place, y_steps_place)):
             if i < x_steps_place:
                 if x_place_postion > 0:
-                    kit.stepper1.onestep(direction=stepper.FORWARD, style=stepper.DOUBLE)
+                    kit1.stepper1.onestep(direction=stepper.FORWARD, style=stepper.DOUBLE)
                 elif x_place_postion < 0:
-                    kit.stepper1.onestep(direction=stepper.BACKWARD, style=stepper.DOUBLE)
+                    kit1  .stepper1.onestep(direction=stepper.BACKWARD, style=stepper.DOUBLE)
                 else:
                     print("Motor X does not need to move")
             if i < y_steps_place:
                 if y_place_postion > 0:
-                    kit.stepper2.onestep(direction=stepper.FORWARD, style=stepper.DOUBLE)
+                    kit1.stepper2.onestep(direction=stepper.FORWARD, style=stepper.DOUBLE)
                 elif y_place_postion < 0:
-                    kit.stepper2.onestep(direction=stepper.BACKWARD, style=stepper.DOUBLE)
+                    kit1.stepper2.onestep(direction=stepper.BACKWARD, style=stepper.DOUBLE)
                 else:
                     print("Motor Y does not need to move")
             time.sleep(0.0001)
