@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Feb  2 19:13:25 2024
-
-@author: Owen Porpora
-"""
-
-# -*- coding: utf-8 -*-
-"""
 Created on Thu Feb  1 15:02:56 2024
 @author: Owen Porpora
 """
@@ -204,7 +197,11 @@ def move_to(new_x, new_y):
     # Move Z-axis down by 15 mm
     z_distance = -45
     move_z_axis(kit2, z_distance, distance_per_step)
-
+    
+    current_position_gantry_x['x'] = new_x
+    current_position_gantry_y['y'] = new_y
+    print(f"X position is location Currently : {current_position_gantry_x['x']} mm")
+    print(f"Y position is location Currently: {current_position_gantry_y['y']} mm")
     # Run the pick sequence
     try:
         pick(blow_time, suck_time, move_to_place_time)
@@ -219,8 +216,8 @@ def move_to(new_x, new_y):
     x_place_postion = place_x - current_position_gantry_x['x']
     y_place_postion = place_y - current_position_gantry_y['y']
 
-    print(f"delta X is to place postion: {x_place_postion} mm")
-    print(f"delta Y is to place postion: {y_place_postion} mm")
+    print(f"delta X to move to place postion: {x_place_postion} mm")
+    print(f"delta Y to move to place postion: {y_place_postion} mm")
 
     x_steps_place = int(abs(x_place_postion) / distance_per_step)
     y_steps_place = int(abs(y_place_postion) / distance_per_step)
@@ -246,7 +243,10 @@ def move_to(new_x, new_y):
     except Exception as e:
         print(f"Error during Z-axis up movement: {e}")
         # Handle the error or exit the program
-
+        
+    current_position_gantry_x['x'] = place_x
+    current_position_gantry_y['y'] = place_y
+    
     # Run the Place sequence
     try:
         place()
@@ -255,8 +255,8 @@ def move_to(new_x, new_y):
         # Handle the error or exit the program
 
     # Update the current position
-    current_position_gantry_x['x'] = new_x
-    current_position_gantry_y['y'] = new_y
+    #current_position_gantry_x['x'] = new_x
+    #current_position_gantry_y['y'] = new_y
     current_position_gantry_z['z'] = (z_distance)  # Corrected line
     print(f"Updated X position: {current_position_gantry_x['x']} mm")
     print(f"Updated Y position: {current_position_gantry_y['y']} mm")
@@ -293,4 +293,4 @@ else:
         time.sleep(2)  # Wait for 5 seconds between movements
 
     # After completing the movements, home the gantry to (0, 0)
-    home_gantry()
+    #home_gantry()
