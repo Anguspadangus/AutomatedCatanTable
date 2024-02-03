@@ -156,14 +156,14 @@ def move_to_home():
 
     # Move xy to place location
     if  home_x_distance > 0:
-        direction_1 = stepper.FORWARD
-    else:
         direction_1 = stepper.BACKWARD
+    else:
+        direction_1 = stepper.FORWARD
         
     if  home_y_distance > 0:
-        direction_2 = stepper.FORWARD
+        direction_2 = stepper.BACkWARD
     else:
-        direction_2 = stepper.BACKWARD
+        direction_2 = stepper.FORWARD
         
     home_x_steps = abs(int(home_x_steps))
     home_y_steps = abs(int(home_y_steps))
@@ -220,14 +220,14 @@ def move_to_pick_list(new_x, new_y):
     y_steps = int(abs(y_distance) / distance_per_step)
 
     if x_steps > 0:
-        direction_1 = stepper.FORWARD
-    else:
         direction_1 = stepper.BACKWARD
+    else:
+        direction_1 = stepper.FORWARD
         
     if y_steps > 0:
-        direction_2 = stepper.FORWARD
+        direction_2 = stepper.BACKWORD
     else:
-        direction_2 = stepper.BACKWARD
+        direction_2 = stepper.FORWARD
         
     x_steps = abs(int(x_steps))
     y_steps = abs(int(y_steps))
@@ -290,14 +290,14 @@ def move_to_place_postion(place_x, place_y):
 
     # Move xy to place location
     if x_steps_place > 0:
-        direction_1 = stepper.FORWARD
-    else:
         direction_1 = stepper.BACKWARD
+    else:
+        direction_1 = stepper.FORWARD
         
     if y_steps_place > 0:
-        direction_2 = stepper.FORWARD
-    else:
         direction_2 = stepper.BACKWARD
+    else:
+        direction_2 = stepper.FORWARD
         
     x_steps_place = abs(int(x_steps_place))
     y_steps_place = abs(int(y_steps_place))
