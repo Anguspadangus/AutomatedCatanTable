@@ -49,11 +49,11 @@ def calculate_steps(distance, distance_per_step):
 def calculate_direction(current, target):
     # Calculate direction for an axis
     if target > current:
-        direction = Adafruit_MotorHAT.FORWARD
-    elif target < current:
         direction = Adafruit_MotorHAT.BACKWARD
+    elif target < current:
+        direction = Adafruit_MotorHAT.FORWARD
     else:
-        direction = Adafruit_MotorHAT.FORWARD  # No change in direction
+        print("no change in direction")  # No change in direction
 
     return direction
 
