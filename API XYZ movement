@@ -1,0 +1,110 @@
+# Import necessary libraries
+from Adafruit_MotorHAT import Adafruit_MotorHAT
+import time
+import atexit
+import threading
+
+# Initialize the motor hats and steppers
+bottomhat = Adafruit_MotorHAT(addr=0x60)
+tophat = Adafruit_MotorHAT(addr=0x61)
+
+myStepperX = bottomhat.getStepper(200, 1)  # Adjust the steps per revolution based on your motor specs
+myStepperY = bottomhat.getStepper(200, 2)  # Adjust the steps per revolution based on your motor specs
+myStepperZ = tophat.getStepper(200, 1)     # 200 steps/rev, motor port #1
+myMotor1 = tophat.getMotor(3)
+myMotor1.setSpeed(175)
+
+# Initialize positions
+home_position_x = 0
+home_position_y = 0
+pick_z = 25
+home_z = 0 
+current_position_x = home_position_x
+current_position_y = home_position_y
+current_position_z = home_z  # Add this line to initialize the Z position
+distance_per_step = 0.2
+
+# Create empty threads
+stepperThreads = [threading.Thread(), threading.Thread()]
+
+# Recommended for auto-disabling motors on shutdown
+def turnOffMotors():
+    bottomhat.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
+    bottomhat.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
+    bottomhat.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
+    bottomhat.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
+    tophat.getMotor(1).run(Adafruit_MotorHAT.RELEASE)
+    tophat.getMotor(2).run(Adafruit_MotorHAT.RELEASE)
+    tophat.getMotor(3).run(Adafruit_MotorHAT.RELEASE)
+    tophat.getMotor(4).run(Adafruit_MotorHAT.RELEASE)
+
+atexit.register(turnOffMotors)
+
+def calculate_steps(distance, distance_per_step):
+    return int(abs(distance) / distance_per_step)
+
+def calculate_direction(current, target):
+    # Calculate direction for an axis
+    if target > current:
+        direction = Adafruit_MotorHAT.FORWARD
+    elif target < current:
+        direction = Adafruit_MotorHAT.BACKWARD
+    else:
+        direction = Adafruit_MotorHAT.FORWARD  # No change in direction
+
+    return direction
+
+def move_steppers_xy(target_x, target_y, distance_per_step):
+    global current_position_x, current_position_y
+    
+    # Calculate the steps needed to move to the target positions
+    steps_x = calculate_steps(target_x - current_position_x, distance_per_step)
+    steps_y = calculate_steps(target_y - current_position_y, distance_per_step)
+
+    # Calculate the direction for each axis
+    direction_x = calculate_direction(current_position_x, target_x)
+    direction_y = calculate_direction(current_position_y, target_y)
+
+    # Create threads for both X and Y steppers
+    stepperThreads[0] = threading.Thread(target=myStepperX.step, args=(steps_x, direction_x, Adafruit_MotorHAT.DOUBLE,))
+    stepperThreads[1] = threading.Thread(target=myStepperY.step, args=(steps_y, direction_y, Adafruit_MotorHAT.DOUBLE,))
+
+    # Start both stepper threads
+    stepperThreads[0].start()
+    stepperThreads[1].start()
+
+    # Wait for both threads to finish
+    stepperThreads[0].join()
+    stepperThreads[1].join()
+
+    # Update current positions
+    current_position_x = target_x
+    current_position_y = target_y
+
+def move_z_axis_position(target_z, distance_per_step):
+    global current_position_z
+    
+    # Calculate the steps needed to move to the target position
+    steps_z = calculate_steps(target_z - current_position_z, distance_per_step)
+    
+    # Determine the direction for the Z-axis
+    direction_z = calculate_direction(current_position_z, target_z)
+
+    # Move the Z-axis to the specified position
+    myStepperZ.step(steps_z, direction_z, Adafruit_MotorHAT.DOUBLE)
+    
+    # Update the current Z position
+    current_position_z = target_z
+
+# Prompt the user to enter values for user_input_x and user_input_y
+user_input_x = list(map(int, input("Enter X coordinates (separated by space): ").split()))
+user_input_y = list(map(int, input("Enter Y coordinates (separated by space): ").split()))
+
+for i in range(min(len(user_input_x), len(user_input_y))):
+    move_steppers_xy(user_input_x[i], user_input_y[i], distance_per_step)
+    move_z_axis_position(pick_z, distance_per_step)
+    time.sleep(2)  # Add a delay if necessary
+    move_z_axis_position(home_z, distance_per_step)
+move_steppers_xy(0, 0, distance_per_step)
+    
+
