@@ -72,14 +72,14 @@ def move_xy_axis(x_cord, y_cord):
     print(f"delta Y to move to new position: {target_distance_y} mm")
     
     if target_distance_x > 0:
-        direction_1 = stepper.FORWARD  # come back and switch
+        direction_1 = stepper.BACKWARD  # come back and switch
     else:
-        direction_1 = stepper.BACKWARD
+        direction_1 = stepper.FORWARD
         
     if target_distance_y > 0:
-        direction_2 = stepper.FORWARD
-    else:
         direction_2 = stepper.BACKWARD
+    else:
+        direction_2 = stepper.FORWARD
         
     target_steps_x = abs(int(target_steps_x))
     target_steps_y = abs(int(target_steps_y))
@@ -91,7 +91,7 @@ def move_xy_axis(x_cord, y_cord):
                 kit1.stepper1.onestep(direction=direction_1, style=stepper.DOUBLE)
             if i <= target_steps_y:
                 kit1.stepper2.onestep(direction=direction_2, style=stepper.DOUBLE)
-            time.sleep(0.0001)
+            time.sleep(0.001)
     except Exception as e:
         print(f"Error during motor movement: {e}")
         # Handle the error or exit the program
@@ -99,8 +99,8 @@ def move_xy_axis(x_cord, y_cord):
     current_position_gantry_x['x'] = x_cord
     current_position_gantry_y['y'] = y_cord
    
-    print(f"delta X to move to new position: {target_distance_x} mm")
-    print(f"delta Y to move to new position: {target_distance_y} mm")
+    print(f"New position at: {x_cord} mm")
+    print(f"New position at: {y_cord} mm")
     
 
 # Input lists of absolute positions for X and Y
