@@ -17,14 +17,17 @@ place_x = 100
 place_y = 50
 current_position_gantry_x = {'x': home_position_x}
 current_position_gantry_y = {'y': home_position_y}
-current_position_z = home_z
+current_position_gripper_z = home_z
+down = "down"
 
 # 0.2 mm per step
 distance_per_step = 0.2
 
 # Vaccum Constants
-blow_time = 0.1
-suck_time = 0.2
+pick_suck_time = 0.2
+pick_blow_time = 0.1
+place_blow_time = 1.0
+
 
 # Setup GPIO mode
 GATE_VALVE_PIN = 17  # Replace this with the actual GPIO pin number
@@ -46,14 +49,54 @@ def set_gate_valve_high():
     print("Gate Valve state high")
 
 # Function to execute the pick sequence
-# def pick():
+# Function to execute the pick sequence
+def pick():
+    set_gate_valve_high()
+    
+    kit2.motor3.throttle = 1.0
+    time.sleep(pick_blow_time)
+    
+    set_gate_valve_low()
+    
+    kit2.motor3.throttle = 1.0
+    time.sleep(pick_suck_time)
+    kit2.motor3.throttle = 0
+    
 
 # Function to execute the place sequence
-# def place():
+def place():
+    set_gate_valve_high()
+    
+    kit2.motor3.throttle = 1.0
+    time.sleep(place_blow_time)
+    kit2.motor3.throttle = 0
+
 
 # Function to move Z-axis to a specified position
-# def move_z_axis():
-
+def move_z_axis(position):
+    global current_position_gripper_z
+    print(f"Last z Gripper position was location: {current_position_gripper_z['z']} mm")
+    
+    target_distance_top = 15 - current_position_gripper_z['z']
+    target_distance_bottom = -15 - current_position_gripper_z['z']
+    
+    if position == "down":
+        print("Moving to Pick position")
+        target_steps = int(abs(target_distance_top) / distance_per_step)
+        direction = stepper.FORWARD
+    else:
+        print("Moving to place position")
+        target_steps = int(abs(target_distance_bottom) / distance_per_step)
+        direction = stepper.BACKWARD
+    
+    try:
+        for i in range(target_steps):
+            kit2.stepper1.onestep(direction=direction, style=stepper.DOUBLE)
+            time.sleep(0.001)
+    except Exception as e:
+        print(f"Error during motor movement: {e}")
+        # Handle the error or exit the program
+      
 # Function to move XY-axis to a specified position Simultaneously
 def move_xy_axis(x_cord, y_cord):
     global current_position_gantry_x
@@ -72,7 +115,7 @@ def move_xy_axis(x_cord, y_cord):
     print(f"delta Y to move to new position: {target_distance_y} mm")
     
     if target_distance_x > 0:
-        direction_1 = stepper.BACKWARD  # come back and switch
+        direction_1 = stepper.BACKWARD  
     else:
         direction_1 = stepper.FORWARD
         
@@ -118,5 +161,11 @@ else:
     # Move to each position in the lists sequentially
     for x_cord, y_cord in zip(positions_list_x, positions_list_y):
         move_xy_axis(x_cord, y_cord)
+        move_z_axis(down)
+        pick()
         time.sleep(2)  # Wait for 2 seconds between movements
+        move_z_axis()
+        move_xy_axis(100, 500)
+        move_z_axis(down)
+        place()
     move_xy_axis(0, 0)
