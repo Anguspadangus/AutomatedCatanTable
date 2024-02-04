@@ -28,7 +28,6 @@ pick_suck_time = 0.2
 pick_blow_time = 0.1
 place_blow_time = 1.0
 
-
 # Setup GPIO mode
 GATE_VALVE_PIN = 17  # Replace this with the actual GPIO pin number
 GPIO.setmode(GPIO.BCM)
@@ -49,46 +48,39 @@ def set_gate_valve_high():
     print("Gate Valve state high")
 
 # Function to execute the pick sequence
-# Function to execute the pick sequence
 def pick():
     set_gate_valve_high()
-    
     kit2.motor3.throttle = 1.0
     time.sleep(pick_blow_time)
-    
     set_gate_valve_low()
-    
     kit2.motor3.throttle = 1.0
     time.sleep(pick_suck_time)
     kit2.motor3.throttle = 0
-    
 
 # Function to execute the place sequence
 def place():
     set_gate_valve_high()
-    
     kit2.motor3.throttle = 1.0
     time.sleep(place_blow_time)
     kit2.motor3.throttle = 0
 
-
 # Function to move Z-axis to a specified position
 def move_z_axis(position):
     global current_position_gripper_z
-    print(f"Last z Gripper position was location: {current_position_gripper_z['z']} mm")
-    
-    target_distance_top = 15 - current_position_gripper_z['z']
-    target_distance_bottom = -15 - current_position_gripper_z['z']
-    
+    print(f"Last z Gripper position was location: {current_position_gripper_z} mm")
+
+    target_distance_top = 15 - current_position_gripper_z
+    target_distance_bottom = -15 - current_position_gripper_z
+
     if position == "down":
         print("Moving to Pick position")
         target_steps = int(abs(target_distance_top) / distance_per_step)
-        direction = stepper.FORWARD
+        direction = stepper.BACKWARD
     else:
         print("Moving to place position")
         target_steps = int(abs(target_distance_bottom) / distance_per_step)
-        direction = stepper.BACKWARD
-    
+        direction = stepper.FORWARD
+
     try:
         for i in range(target_steps):
             kit2.stepper1.onestep(direction=direction, style=stepper.DOUBLE)
@@ -96,37 +88,33 @@ def move_z_axis(position):
     except Exception as e:
         print(f"Error during motor movement: {e}")
         # Handle the error or exit the program
-      
+
+    current_position_gripper_z += target_distance_top if position == "down" else target_distance_bottom
+    print(f"New Gripper position at: {current_position_gripper_z} mm")
+
 # Function to move XY-axis to a specified position Simultaneously
 def move_xy_axis(x_cord, y_cord):
     global current_position_gantry_x
     global current_position_gantry_y
-    
+
     print(f"Last X position was location: {current_position_gantry_x['x']} mm")
     print(f"Last Y position was location: {current_position_gantry_y['y']} mm")
-    
+
     target_distance_x = x_cord - current_position_gantry_x['x']
     target_distance_y = y_cord - current_position_gantry_y['y']
 
     target_steps_x = int(abs(target_distance_x) / distance_per_step)
     target_steps_y = int(abs(target_distance_y) / distance_per_step)
-        
+
     print(f"delta X to move to new position: {target_distance_x} mm")
     print(f"delta Y to move to new position: {target_distance_y} mm")
-    
-    if target_distance_x > 0:
-        direction_1 = stepper.BACKWARD  
-    else:
-        direction_1 = stepper.FORWARD
-        
-    if target_distance_y > 0:
-        direction_2 = stepper.BACKWARD
-    else:
-        direction_2 = stepper.FORWARD
-        
+
+    direction_1 = stepper.BACKWARD if target_distance_x > 0 else stepper.FORWARD
+    direction_2 = stepper.BACKWARD if target_distance_y > 0 else stepper.FORWARD
+
     target_steps_x = abs(int(target_steps_x))
     target_steps_y = abs(int(target_steps_y))
-    
+
     # Move both X and Y axis motors simultaneously
     try:
         for i in range(max(target_steps_x, target_steps_y)):
@@ -138,13 +126,12 @@ def move_xy_axis(x_cord, y_cord):
     except Exception as e:
         print(f"Error during motor movement: {e}")
         # Handle the error or exit the program
-   
-    current_position_gantry_x['x'] = x_cord
-    current_position_gantry_y['y'] = y_cord
-   
-    print(f"New position at: {x_cord} mm")
-    print(f"New position at: {y_cord} mm")
-    
+
+    current_position_gantry_x['x'] += target_distance_x
+    current_position_gantry_y['y'] += target_distance_y
+
+    print(f"New position at: {current_position_gantry_x['x']} mm")
+    print(f"New position at: {current_position_gantry_y['y']} mm")
 
 # Input lists of absolute positions for X and Y
 positions_list_x = input("Enter a list of X positions (comma-separated) in millimeters: ").split(',')
@@ -164,8 +151,8 @@ else:
         move_z_axis(down)
         pick()
         time.sleep(2)  # Wait for 2 seconds between movements
-        move_z_axis()
-        move_xy_axis(100, 500)
+        move_z_axis("up")  # Assuming you need to move the gripper up after picking
+        move_xy_axis(100, 300)
         move_z_axis(down)
         place()
     move_xy_axis(0, 0)
