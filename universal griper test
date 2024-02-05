@@ -1,61 +1,84 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jan 29 17:11:20 2024
-
-@author: Owen Porpora
-"""
+import time
 import RPi.GPIO as GPIO
 from adafruit_motorkit import MotorKit
-import time
-import board
+from adafruit_motor import stepper
 
-# Create the MotorKit object, specifying the I2C bus
-kit = MotorKit(i2c=board.I2C())
+# Replace with the actual initial position
+current_position_gripper_z = 0
 
-# Set the GPIO pin for the gate valve
-GATE_VALVE_PIN = 16
+# 0.2 mm per step
+distance_per_step = 0.2
 
+# Vaccum Constants
+pick_suck_time = 0.2
+pick_blow_time = 0.1
+place_blow_time = 1.0
+
+# Setup GPIO mode
+GATE_VALVE_PIN = 17  # Replace this with the actual GPIO pin number
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(GATE_VALVE_PIN, GPIO.OUT)
+
+
+kit2 = MotorKit(address=0x61)
+
+# Function to set the gate valve low
 def set_gate_valve_low():
     GPIO.output(GATE_VALVE_PIN, GPIO.LOW)
     print("Gate Valve state low")
 
+# Function to set the gate valve high
 def set_gate_valve_high():
     GPIO.output(GATE_VALVE_PIN, GPIO.HIGH)
     print("Gate Valve state high")
 
-def run_motor_with_timeout(motor, throttle, duration, action):
-    motor.throttle = throttle
-    start_time = time.time()
-    print(f"{action} has begun at {time.strftime('%H:%M:%S', time.localtime(start_time))}")
-    time.sleep(duration)
-    motor.throttle = 0
-    end_time = time.time()
-    print(f"{action} has finished at {time.strftime('%H:%M:%S', time.localtime(end_time))}. Elapsed time: {end_time - start_time:.2f} seconds")
-
-def pick(blow_motor, suck_motor, blow_time, suck_time, pick_time):
-    set_gate_valve_low()
-    run_motor_with_timeout(blow_motor, 1, blow_time, "Blowing")
+# Function to execute the pick sequence
+def pick():
     set_gate_valve_high()
-    run_motor_with_timeout(suck_motor, 1, suck_time, "Sucking")
-    time.sleep(pick_time)
+    kit2.motor3.throttle = 1.0
+    time.sleep(pick_blow_time)
+    set_gate_valve_low()
+    kit2.motor3.throttle = 1.0
+    time.sleep(pick_suck_time)
+    kit2.motor3.throttle = 0
 
-try:
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(GATE_VALVE_PIN, GPIO.OUT)
+# Function to execute the place sequence
+def place():
+    set_gate_valve_high()
+    kit2.motor3.throttle = 1.0
+    time.sleep(place_blow_time)
+    kit2.motor3.throttle = 0
 
-    #Time values
-    blow_time = 1.0   # Blow time in seconds
-    suck_time = 3.0   # Suck time in seconds
-    pick_time = 10.0  # Pick time in seconds
+# Function to move Z-axis to a specified position
+def move_z_axis(position):
+    global current_position_gripper_z
+    print(f"Last z Gripper position was location: {current_position_gripper_z} mm")
 
-    # Run the sequence once
-    pick(kit.motor_M1, kit.motor_M1, blow_time, suck_time, pick_time)
-    
-finally:
-    # Clean up GPIO
-    GPIO.cleanup()
+    target_distance_top = 15 - current_position_gripper_z
+    target_distance_bottom = -15 - current_position_gripper_z
 
-    # Turn off the motors in case of an exception
-    kit.motor_M1.throttle = 0
+    if position == "down":
+        print("Moving Z-axis down")
+        target_steps = int(abs(target_distance_top) / distance_per_step)
+        direction = stepper.BACKWARD  # Adjust as needed
+    else:
+        print("Moving Z-axis up")
+        target_steps = int(abs(target_distance_bottom) / distance_per_step)
+        direction = stepper.FORWARD  # Adjust as needed
 
+    try:
+        for i in range(target_steps):
+            kit2.stepper1.onestep(direction=direction, style=stepper.DOUBLE)  # Adjust style as needed
+            time.sleep(0.001)
+    except Exception as e:
+        print(f"Error during motor movement: {e}")
+        # Handle the error or exit the program
 
+    current_position_gripper_z += target_distance_top if position == "down" else target_distance_bottom
+    print(f"New Gripper position at: {current_position_gripper_z} mm")
+
+# Execute the sequence
+move_z_axis("down")
+pick()
+move_z_axis("up")
+place()
