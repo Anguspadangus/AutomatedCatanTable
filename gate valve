@@ -1,16 +1,10 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Feb  1 15:02:56 2024
-@author: Owen Porpora
-"""
-
 import time
 import RPi.GPIO as GPIO
 from adafruit_motorkit import MotorKit
 
 # Vaccum Constants
-pick_suck_time = 0.2
-pick_blow_time = 0.1
+pick_suck_time = 3.0
+pick_blow_time = 0.5
 place_blow_time = 1.0
 
 # Setup GPIO mode
@@ -29,24 +23,31 @@ def set_gate_valve_blow():
     print("Gate Valve state low")
 
 # Function to set the gate valve high
-def set_gate_valve_Suck():
+def set_gate_valve_suck():
     GPIO.output(GATE_VALVE_Blow, GPIO.LOW)
     GPIO.output(GATE_VALVE_Suck, GPIO.HIGH)
     print("Gate Valve state high")
 
-# Take user input and call corresponding function
-def main():
-    while True:
-        user_input = input("Enter 'suck' or 'blow' to control the gate valve (or 'exit' to quit): ").lower()
-        
-        if user_input == 'suck':
-            set_gate_valve_Suck()
-        elif user_input == 'blow':
-            set_gate_valve_blow()
-        elif user_input == 'exit':
-            break
-        else:
-            print("Invalid input. Please enter 'suck' or 'blow'.")
+# Function to execute the pick sequence
+def pick():
+    set_gate_valve_blow()
+    kit2.motor2.throttle = 1.0
+    time.sleep(pick_blow_time)
+    set_gate_valve_suck()
+    time.sleep(pick_suck_time)
 
-if __name__ == "__main__":
-    main()
+# Function to execute the place sequence
+def place():
+    set_gate_valve_blow()
+    kit2.motor2.throttle = 1.0
+    time.sleep(place_blow_time)
+    kit2.motor2.throttle = 0
+
+# Run pick function
+pick()
+
+# Wait for one second
+time.sleep(1)
+
+# Run place function
+place()
