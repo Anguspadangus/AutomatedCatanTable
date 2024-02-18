@@ -1,0 +1,52 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Feb  1 15:02:56 2024
+@author: Owen Porpora
+"""
+
+import time
+import RPi.GPIO as GPIO
+from adafruit_motorkit import MotorKit
+
+# Vaccum Constants
+pick_suck_time = 0.2
+pick_blow_time = 0.1
+place_blow_time = 1.0
+
+# Setup GPIO mode
+GATE_VALVE_Blow = 6
+GATE_VALVE_Suck = 13 
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(GATE_VALVE_Blow, GPIO.OUT)
+GPIO.setup(GATE_VALVE_Suck, GPIO.OUT)
+
+kit2 = MotorKit(address=0x61)
+
+# Function to set the gate valve low
+def set_gate_valve_blow():
+    GPIO.output(GATE_VALVE_Suck, GPIO.LOW)
+    GPIO.output(GATE_VALVE_Blow, GPIO.HIGH)
+    print("Gate Valve state low")
+
+# Function to set the gate valve high
+def set_gate_valve_Suck():
+    GPIO.output(GATE_VALVE_Blow, GPIO.LOW)
+    GPIO.output(GATE_VALVE_Suck, GPIO.HIGH)
+    print("Gate Valve state high")
+
+# Take user input and call corresponding function
+def main():
+    while True:
+        user_input = input("Enter 'suck' or 'blow' to control the gate valve (or 'exit' to quit): ").lower()
+        
+        if user_input == 'suck':
+            set_gate_valve_Suck()
+        elif user_input == 'blow':
+            set_gate_valve_blow()
+        elif user_input == 'exit':
+            break
+        else:
+            print("Invalid input. Please enter 'suck' or 'blow'.")
+
+if __name__ == "__main__":
+    main()
