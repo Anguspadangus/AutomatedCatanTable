@@ -65,32 +65,44 @@ def place():
     kit2.motor3.throttle = 0
 
 # Function to move Z-axis to a specified position
-def move_z_axis(position):
+# Function to move Z-axis to a specified position
+def move_z_axis(gamepiece):
     global current_position_gripper_z
-    print(f"Last z Gripper position was location: {current_position_gripper_z} mm")
+    print(f"Last Z Gripper position was at: {current_position_gripper_z} mm")
 
-    target_distance_top = 15 - current_position_gripper_z
-    target_distance_bottom = -15 - current_position_gripper_z
+    # Define position mappings relative to home position
+    gamepiece_mappings = {
+        "settlement": 5,
+        "city": 6,
+        "road": 20,
+        "robber": 8,
+        "num": -18,
+        "hex": -18,
+        "home": 0  # Adjust home position if necessary
+    }
 
-    if position == "down":
-        print("Moving to Pick position")
-        target_steps = int(abs(target_distance_top) / distance_per_step)
-        direction = stepper.BACKWARD
+    if gamepiece in gamepiece_mappings:
+        target_position = gamepiece_mappings[gamepiece]
+        print(f"Moving Z-axis to {gamepiece} position")
+        
+        # Calculate target steps and direction
+        target_steps = int(abs(target_position - current_position_gripper_z) / distance_per_step)
+        direction = stepper.FORWARD if target_position > current_position_gripper_z else stepper.BACKWARD
+
+        try:
+            for i in range(target_steps):
+                kit2.stepper1.onestep(direction=direction, style=stepper.DOUBLE)
+                time.sleep(0.001)
+            
+            # Update current position
+            current_position_gripper_z = target_position
+            print(f"Z-axis moved to {gamepiece} position successfully.")
+            
+        except Exception as e:
+            print(f"Error during motor movement: {e}")
+            # Handle the error or exit the program
     else:
-        print("Moving to place position")
-        target_steps = int(abs(target_distance_bottom) / distance_per_step)
-        direction = stepper.FORWARD
-
-    try:
-        for i in range(target_steps):
-            kit2.stepper1.onestep(direction=direction, style=stepper.DOUBLE)
-            time.sleep(0.001)
-    except Exception as e:
-        print(f"Error during motor movement: {e}")
-        # Handle the error or exit the program
-
-    current_position_gripper_z += target_distance_top if position == "down" else target_distance_bottom
-    print(f"New Gripper position at: {current_position_gripper_z} mm")
+        print("Invalid input position")
 
 # Function to move XY-axis to a specified position Simultaneously
 def move_xy_axis(x_cord, y_cord):
