@@ -47,24 +47,38 @@ def set_gate_valve_high():
     GPIO.output(GATE_VALVE_PIN, GPIO.HIGH)
     print("Gate Valve state high")
 
-# Function to execute the pick sequence
-def pick():
-    set_gate_valve_high()
-    kit2.motor3.throttle = 1.0
-    time.sleep(pick_blow_time)
-    set_gate_valve_low()
-    kit2.motor3.throttle = 1.0
-    time.sleep(pick_suck_time)
-    kit2.motor3.throttle = 0
+# Function to execute the place sequence
+def pick(gamepiece):
+    if gamepiece in ["num", "hex"]:
+        set_gate_valve_1_suck()
+        kit2.motor3.throttle = 1.0
+        time.sleep(0.1)
+    elif gamepiece in ["settlement", "city", "road", "robber"]:
+        #set_gate_valve_2_blow()
+        #kit2.motor1.throttle = 0.5
+        #time.sleep(1)
+        #kit2.motor1.throttle = 0
+        set_gate_valve_2_suck()
+        kit2.motor3.throttle = 1.0
+        time.sleep(2)
+    else:
+        print("Invalid gamepiece type")
 
 # Function to execute the place sequence
-def place():
-    set_gate_valve_high()
-    kit2.motor3.throttle = 1.0
-    time.sleep(place_blow_time)
-    kit2.motor3.throttle = 0
-
-# Function to move Z-axis to a specified position
+def place(gamepiece):
+    if gamepiece in ["num", "hex"]:
+        kit2.motor3.throttle = 0
+        set_gate_valve_1_blow()
+        kit2.motor4.throttle = 1.0
+        time.sleep(0.25)
+        kit2.motor3.throttle = 0
+    elif gamepiece in ["settlement", "city", "road", "robber"]:
+        kit2.motor3.throttle = 0
+        set_gate_valve_2_blow()
+        kit2.motor4.throttle = 1.0
+        time.sleep(1)
+        kit2.motor4.throttle = 0
+        
 # Function to move Z-axis to a specified position
 def move_z_axis(gamepiece):
     global current_position_gripper_z
@@ -72,12 +86,12 @@ def move_z_axis(gamepiece):
 
     # Define position mappings relative to home position
     gamepiece_mappings = {
-        "settlement": 5,
-        "city": 6,
-        "road": 20,
-        "robber": 8,
-        "num": -18,
-        "hex": -18,
+        "settlement": -5,
+        "city": -6,
+        "road": -22,
+        "robber": -8,
+        "num": 18,
+        "hex": 18,
         "home": 0  # Adjust home position if necessary
     }
 
@@ -103,7 +117,6 @@ def move_z_axis(gamepiece):
             # Handle the error or exit the program
     else:
         print("Invalid input position")
-
 # Function to move XY-axis to a specified position Simultaneously
 def move_xy_axis(x_cord, y_cord):
     global current_position_gantry_x
