@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Feb 19 19:06:24 2024
+Created on Wed Feb 28 21:00:43 2024
 
 @author: Owen Porpora
 """
@@ -117,24 +117,40 @@ def move_z_axis(gamepiece):
         print("Invalid input position")
 
 #pick hex & num logic
-pick("hex")
-move_z_axis("home")
-time.sleep(3)
-move_z_axis("hex")
-place("hex")
-move_z_axis("home")
+def pick_and_place_numhex(gamepiece):
+    if gamepiece == "hex" or gamepiece == "num":
+        pick(gamepiece)
+        move_z_axis(gamepiece)
+        time.sleep(3)           #move XY cord
+        move_z_axis(gamepiece)
+        place(gamepiece)
+        move_z_axis("home")
+    else:
+        print("Invalid shape specified.")
+        
+#pick buildings logic
+def pick_and_place_buildings(gamepiece):
+    if gamepiece != "hex" and gamepiece != "num":
+        pick(gamepiece)  
+        move_z_axis(gamepiece)
+        time.sleep(3)           #move XY cord
+        move_z_axis("midpoint")
+        place(gamepiece)  
+        move_z_axis("home")
+    else:
+        print("Invalid shape specified.")
 
-#pick everything else logic
-#pick("road")
-#move_z_axis("home")
-#time.sleep(3)
-#move_z_axis("midpoint")
-#place("road")
-#move_z_axis("home")
+# Call the function with the desired gamepiece
+pick_and_place_buildings("road")
+
+time.sleep(10)
+# Call the function with the desired shape
+pick_and_place_numhex("hex")
 
 #gate vale testing 
 #set_gate_valve_blow()
 #kit2.motor3.throttle =1
 #time.sleep(5)
 #kit2.motor3.throttle = 0
+
 
