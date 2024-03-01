@@ -20,6 +20,12 @@ distance_per_step = 0.2
 
 # Replace with the actual initial position
 current_position_gripper_z = 0
+place_hex_x = 200
+place_hex_y = 300
+home_position_x = 0
+home_position_y = 0
+current_position_gantry_x = {'x': home_position_x}
+current_position_gantry_y = {'y': home_position_y}
 
 # Setup GPIO mode
 GATE_VALVE_Blow = 6
@@ -28,6 +34,7 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(GATE_VALVE_Blow, GPIO.OUT)
 GPIO.setup(GATE_VALVE_Suck, GPIO.OUT)
 
+kit1 = MotorKit(address=0x60)
 kit2 = MotorKit(address=0x61)
 
 # Function to set the gate valve low
@@ -57,7 +64,7 @@ def pick(gamepiece):
         kit2.motor4.throttle = 0
         set_gate_valve_suck()
         kit2.motor3.throttle = 1.0
-        time.sleep(5)
+        time.sleep(3)
     else:
         print("Invalid gamepiece type")
 
@@ -116,12 +123,55 @@ def move_z_axis(gamepiece):
     else:
         print("Invalid input position")
 
+# Function to move XY-axis to a specified position Simultaneously
+def move_xy_axis(x_cord, y_cord):
+    global current_position_gantry_x
+    global current_position_gantry_y
+
+    print(f"Last X position was location: {current_position_gantry_x['x']} mm")
+    print(f"Last Y position was location: {current_position_gantry_y['y']} mm")
+
+    target_distance_x = x_cord - current_position_gantry_x['x']
+    target_distance_y = y_cord - current_position_gantry_y['y']
+
+    target_steps_x = int(abs(target_distance_x) / distance_per_step)
+    target_steps_y = int(abs(target_distance_y) / distance_per_step)
+
+    print(f"delta X to move to new position: {target_distance_x} mm")
+    print(f"delta Y to move to new position: {target_distance_y} mm")
+
+    direction_1 = stepper.BACKWARD if target_distance_x > 0 else stepper.FORWARD
+    direction_2 = stepper.BACKWARD if target_distance_y > 0 else stepper.FORWARD
+
+    target_steps_x = abs(int(target_steps_x))
+    target_steps_y = abs(int(target_steps_y))
+
+    # Move both X and Y axis motors simultaneously
+    try:
+        for i in range(max(target_steps_x, target_steps_y)):
+            if i <= target_steps_x:
+                kit1.stepper1.onestep(direction=direction_1, style=stepper.DOUBLE)
+            if i <= target_steps_y:
+                kit1.stepper2.onestep(direction=direction_2, style=stepper.DOUBLE)
+            time.sleep(0.001)
+    except Exception as e:
+        print(f"Error during motor movement: {e}")
+        # Handle the error or exit the program
+
+    current_position_gantry_x['x'] += target_distance_x
+    current_position_gantry_y['y'] += target_distance_y
+
+    print(f"New position at: {current_position_gantry_x['x']} mm")
+    print(f"New position at: {current_position_gantry_y['y']} mm")
+
+
 #pick hex & num logic
-def pick_and_place_numhex(gamepiece):
+def pick_and_place_numhex(gamepiece, x_cord, y_cord):
     if gamepiece == "hex" or gamepiece == "num":
+        move_xy_axis(x_cord, y_cord)
         pick(gamepiece)
-        move_z_axis(gamepiece)
-        time.sleep(3)           #move XY cord
+        move_z_axis("home")
+        move_xy_axis(place_hex_x,place_hex_y)           #move XY cord
         move_z_axis(gamepiece)
         place(gamepiece)
         move_z_axis("home")
@@ -129,11 +179,12 @@ def pick_and_place_numhex(gamepiece):
         print("Invalid shape specified.")
         
 #pick buildings logic
-def pick_and_place_buildings(gamepiece):
+def pick_and_place_buildings(gamepiece, x_cord, y_cord):
     if gamepiece != "hex" and gamepiece != "num":
+        move_xy_axis(x_cord, y_cord)
         pick(gamepiece)  
-        move_z_axis(gamepiece)
-        time.sleep(3)           #move XY cord
+        move_z_axis("home")
+        move_xy_axis(place_hex_x,place_hex_y)          #move XY cord
         move_z_axis("midpoint")
         place(gamepiece)  
         move_z_axis("home")
@@ -141,11 +192,12 @@ def pick_and_place_buildings(gamepiece):
         print("Invalid shape specified.")
 
 # Call the function with the desired gamepiece
-pick_and_place_buildings("road")
+#pick_and_place_buildings("road")
 
-time.sleep(10)
+#time.sleep(10)
+
 # Call the function with the desired shape
-pick_and_place_numhex("hex")
+#pick_and_place_numhex("hex")
 
 #gate vale testing 
 #set_gate_valve_blow()
@@ -153,4 +205,28 @@ pick_and_place_numhex("hex")
 #time.sleep(5)
 #kit2.motor3.throttle = 0
 
+move_xy_axis(x_cord, y_cord)
+pick("hex")
+move_z_axis("home")
+move_xy_axis(place_hex_x, place_hex_y)
+move_z_axis("hex")
+place("hex")
 
+'''
+# Input lists of absolute positions for X and Y
+positions_list_x = input("Enter a list of X positions (comma-separated) in millimeters: ").split(',')
+positions_list_y = input("Enter a list of Y positions (comma-separated) in millimeters: ").split(',')
+
+# Check if the input lists have the same length
+if len(positions_list_x) != len(positions_list_y):
+    print("Error: X and Y position lists must have the same length.")
+else:
+    # Convert string values to integers
+    positions_list_x = [int(position_x) for position_x in positions_list_x]
+    positions_list_y = [int(position_y) for position_y in positions_list_y]
+
+    # Move to each position in the lists sequentially
+    for x_cord, y_cord in zip(positions_list_x, positions_list_y):
+        pick_and_place_numhex("hex", x_cord, y_cord)
+    move_xy_axis(0, 0)
+'''
