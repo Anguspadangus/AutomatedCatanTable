@@ -82,22 +82,3 @@ class EmptyHex(Tile):
 class Number(Tile):
     def __init__(self, radius):
         super().__init__(Circle((0,0), radius=radius), 1)
-
-# Stack of tiles to be manipulated with 
-class TileStack():
-    def __init__(self, position):
-        self.position = position
-        self.stack_height = 0
-        self.stack = []
-        
-    def push(self, tile):
-        self.stack.append(tile)
-        self.stack_height += tile.height
-        
-    def pop(self):
-        tile = self.stack.pop()
-        self.stack_height -= tile.height
-        return tile
-    
-    def __len__(self):
-        return len(self.stack)

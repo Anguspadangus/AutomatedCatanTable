@@ -47,19 +47,6 @@ def find_background(image):
         best_contour = contours[max_area_index]
     return best_contour
 
-def convert_image_to_space(image):
-    # https://nilesh0109.medium.com/camera-image-perspective-transformation-to-different-plane-using-opencv-5e389dd56527
-    pass
-
-def undistort_image(image):
-    # DIM=XXX
-    # K=np.array(YYY)
-    # D=np.array(ZZZ)
-    # h,w = image.shape[:2]
-    # map1, map2 = cv2.fisheye.initUndistortRectifyMap(K, D, np.eye(3), K, DIM, cv2.CV_16SC2)
-    # undistorted_img = cv2.remap(image, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-    return image
-
 def load_image(filepath = 'src\\test\\images\\robber1.jpeg'):
     image = cv2.imread(filepath)
     return image
@@ -211,7 +198,6 @@ def display_on_image(cords, image):
     cv2.destroyAllWindows()
     
 def analyze_board(board, image, pieces = []):
-    image = undistort_image(image)
     treated_image = hexagon_mask(image, board)
     robber = None
     for i, obj in enumerate(pieces):

@@ -1,15 +1,12 @@
-from objects.TableComponents import SingleDegreeComponent, CameraRig
+from objects.TableComponents import *
 from objects.Gantry import Gantry
-from objects.BoardComponents import *
 
 class Table():
-    def __init__(self, gantry: Gantry, camera: CameraRig, lift: SingleDegreeComponent, cover: SingleDegreeComponent):
+    def __init__(self, gantry: Gantry, camera: CameraRig, lift: Lift, cover: SingleDegreeComponent):
         self.gantry = gantry
         self.camera = camera
         self.lift = lift
         self.cover = cover
-        self.hex_stack = []
-        self.number_stack = []
         
     def run(self):
         # drop lift
@@ -22,5 +19,7 @@ class Table():
         # take & place hexes on
         # take & place numbers on
         # take & place robber on
+        # open cover
+        # raise lift
         
         pass
