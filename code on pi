@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Feb 28 21:00:43 2024
+Created on Mon Mar  4 21:15:20 2024
 
 @author: Owen Porpora
 """
@@ -15,6 +15,11 @@ pick_suck_time = 3.0
 pick_blow_time = 0.5
 place_blow_time = 1.0
 
+#peice counters
+hex_count = 0
+num_count = 0
+hex_stack_height = 3
+num_stack_height = 3 
 # 0.2 mm per step
 distance_per_step = 0.2
 
@@ -54,8 +59,7 @@ def pick(gamepiece):
     if gamepiece in ["num", "hex"]:
         set_gate_valve_suck()
         kit2.motor3.throttle = 1.0
-        move_z_axis(gamepiece)
-        time.sleep(0.1)
+        time.sleep(0.25)
     elif gamepiece in ["settlement", "city", "road", "robber"]:
         set_gate_valve_blow()
         kit2.motor4.throttle = .75
@@ -67,15 +71,22 @@ def pick(gamepiece):
         time.sleep(3)
     else:
         print("Invalid gamepiece type")
+    return(hex_count,num_count)
 
 # Function to execute the place sequence
 def place(gamepiece):
+    global hex_count
+    global num_count
     if gamepiece in ["num", "hex"]:
         kit2.motor3.throttle = 0
         set_gate_valve_blow()
         kit2.motor4.throttle = 1.0
-        time.sleep(0.2)
+        time.sleep(0.4)
         kit2.motor4.throttle = 0
+        if gamepiece == "hex":
+            hex_count += 1 
+        else:
+            num_count += 1
     elif gamepiece in ["settlement", "city", "road", "robber"]:
         kit2.motor3.throttle = 0
         set_gate_valve_blow()
@@ -86,6 +97,8 @@ def place(gamepiece):
 # Function to move Z-axis to a specified position
 def move_z_axis(gamepiece):
     global current_position_gripper_z
+    global hex_count
+    global num_count
     print(f"Last Z Gripper position was at: {current_position_gripper_z} mm")
 
     # Define position mappings relative to home position
@@ -97,6 +110,8 @@ def move_z_axis(gamepiece):
         "num": 18,
         "hex": 18,
         "midpoint": -9,
+        "hex stack": 15,
+        "num stack": 15,
         "home": 0  # Adjust home position if necessary
     }
 
@@ -104,10 +119,19 @@ def move_z_axis(gamepiece):
         target_position = gamepiece_mappings[gamepiece]
         print(f"Moving Z-axis to {gamepiece} position")
         
+        
         # Calculate target steps and direction
-        target_steps = int(abs(target_position - current_position_gripper_z) / distance_per_step)
-        direction = stepper.FORWARD if target_position > current_position_gripper_z else stepper.BACKWARD
-
+        if gamepiece == "hex stack":
+            target_steps = int(abs((gamepiece_mappings["hex stack"] + hex_count) - current_position_gripper_z) / distance_per_step)
+            direction = stepper.FORWARD if target_position > current_position_gripper_z else stepper.BACKWARD
+        elif gamepiece == "num stack":
+            target_steps = int(abs((gamepiece_mappings["num stack"] + num_count) - current_position_gripper_z) / distance_per_step)
+            direction = stepper.FORWARD if target_position > current_position_gripper_z else stepper.BACKWARD
+        else:
+            target_steps = int(abs(target_position - current_position_gripper_z) / distance_per_step)
+            direction = stepper.FORWARD if target_position > current_position_gripper_z else stepper.BACKWARD
+        
+        
         try:
             for i in range(target_steps):
                 kit2.stepper1.onestep(direction=direction, style=stepper.DOUBLE)
@@ -172,7 +196,7 @@ def pick_and_place_numhex(gamepiece, x_cord, y_cord):
         pick(gamepiece)
         move_z_axis("home")
         move_xy_axis(place_hex_x,place_hex_y)           #move XY cord
-        move_z_axis(gamepiece)
+        move_z_axis("hex stack")
         place(gamepiece)
         move_z_axis("home")
     else:
@@ -191,13 +215,42 @@ def pick_and_place_buildings(gamepiece, x_cord, y_cord):
     else:
         print("Invalid shape specified.")
 
+# Modified pick and place function for picking from stacks
+def pick_from_stack(gamepiece, x_cord, y_cord):
+    
+    if gamepiece == "hex" or gamepiece == "num":
+        if gamepiece == "hex" and hex_stack_height > 0:
+            move_xy_axis(225, 325)
+            move_z_axis("hex stack")
+            pick(gamepiece)
+            move_z_axis("home")
+            move_xy_axis(x_cord,y_cord)
+            move_z_axis(gamepiece)
+            place(gamepiece)
+            move_z_axis("home")
+        elif gamepiece == "num" and num_stack_height > 0:
+            move_z_axis("num stack")
+            pick(gamepiece)
+            move_z_axis("home")
+        else:
+            print(f"No {gamepiece} available on the stack.")
+    else:
+        print("Invalid shape specified.")
+
 # Call the function with the desired gamepiece
 #pick_and_place_buildings("road")
 
 #time.sleep(10)
 
 # Call the function with the desired shape
-#pick_and_place_numhex("hex")
+#pick_and_place_numhex("hex",100,200)
+#pick_and_place_numhex("hex",100,210)
+#move_xy_axis(0,0)
+
+pick_from_stack("hex",100,200)
+pick_from_stack("hex",100,279)
+pick_from_stack("hex",100,356)
+move_xy_axis(0,0)
 
 #gate vale testing 
 #set_gate_valve_blow()
@@ -205,12 +258,14 @@ def pick_and_place_buildings(gamepiece, x_cord, y_cord):
 #time.sleep(5)
 #kit2.motor3.throttle = 0
 
+"""
 move_xy_axis(x_cord, y_cord)
 pick("hex")
 move_z_axis("home")
 move_xy_axis(place_hex_x, place_hex_y)
 move_z_axis("hex")
 place("hex")
+"""
 
 '''
 # Input lists of absolute positions for X and Y
