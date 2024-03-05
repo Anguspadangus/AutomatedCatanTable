@@ -3,6 +3,7 @@ from objects.BoardComponents import *
 from objects.Board import Board
 
 import abc
+import time
 
 class PumpAssembly():
     def __init__(self, valve: DCMotor, intake: DCMotor, outtake: DCMotor = None):
@@ -20,11 +21,12 @@ class PumpAssembly():
         pass    
         
 class Mount():
-    def __init__(self, z_motor: Stepper, right_pump_assemply: PumpAssembly, left_pump_assembly: PumpAssembly,
+    def __init__(self, z_motor: Stepper, right_pump_assemply: PumpAssembly, left_pump_assembly: PumpAssembly, offset = 30,
                  right_gribber_type = 'cup', left_gripper_type = 'universal'):
         self.z_motor = z_motor
         self.right_pump_assembly = right_pump_assemply
         self.left_pump_assembly = left_pump_assembly
+        self.offset = offset
         self.right_gribber_type = right_gribber_type
         self.left_gripper_type = left_gripper_type
         self.mount_dimensions = [0]
@@ -37,6 +39,12 @@ class Mount():
             return z
         elif suckable.gripper_type == self.left_gribber_type:
             return -z
+        
+    def add_offset(self, suckable):
+        if suckable.gripper_type == self.right_gribber_type:
+            return [object.position[0], object.position[1] + self.offset]
+        elif suckable.gripper_type == self.left_gribber_type:
+            return [object.position[0], object.position[1] - self.offset]
         
     def pick_up(self, suckable, z):
         z = self.convert_z(suckable, z)
@@ -130,32 +138,41 @@ class Gantry():
         self.orange_bin = [Container(orange_position)]
         self.white_bin = [Container(white_position)]
         
-    def move_to(self, location):
-        pass
+        self.current_suckable = None
+        
+    def move_to(self, object):
+        # we will always move to an object in space, i think?
+        xy = self.mount.add_offset(object)
+        self.x_motor.move_to(xy[0])
+        self.y_motor.move_to(xy[1])
     
     def pick_up(self, object_to_pick):
-        self.move_to(object_to_pick)
-        
         if isinstance(object_to_pick, list) and isinstance(object_to_pick[0], Container): # Lazy eval
             valid_container = self.valid_remove_container(object_to_pick)
             height = valid_container.stack_height # Tested it, it does a copy.
             item = valid_container.pop()
+            
+            self.move_to(item)
             self.mount.pick_up(item, height)
+            self.current_suckable = item
         elif isinstance(object_to_pick, list) and not isinstance(object_to_pick[0], Container):
             raise RuntimeError("Must be a list of containers")
         else:
-            self.mount.pick_up(object, object.height)
+            self.move_to(item)
+            self.mount.pick_up(object_to_pick, object.height)
+            self.current_suckable = object_to_pick
     
-    def place(self, xy, object_to_place, where_to_place):
-        self.move_to(xy)
+    def place(self, where_to_place):
         if isinstance(where_to_place, list) and isinstance(where_to_place[0], Container): # Lazy eval
-            valid_container = self.valid_place_container(object_to_place, where_to_place)
-            valid_container.push(object_to_place)
-            self.mount.place(object_to_place, valid_container.height) # + object.height) we want to place right above the stack so adding it first should be ideal
-        elif isinstance(object_to_place, list) and not isinstance(object_to_place[0], Container):
+            valid_container = self.valid_place_container(self.current_suckable, where_to_place)
+            valid_container.push(self.current_suckable)
+            self.mount.place(self.current_suckable, valid_container.height) # + object.height) we want to place right above the stack so adding it first should be ideal
+        elif isinstance(where_to_place, list) and not isinstance(where_to_place[0], Container):
             raise RuntimeError("Must be a list of containers")
         else:
-            self.mount.place(object_to_place, where_to_place) # man this is definity cheating and will lead to so many bugs but I love it, its hard to do things in python without the languge being strongly typed
+            self.mount.place(self.current_suckable, where_to_place) # man this is definity cheating and will lead to so many bugs but I love it, its hard to do things in python without the languge being strongly typed
+        
+        self.current_suckable = None
                
     def valid_place_container(self, object, containers):
         for container in containers:

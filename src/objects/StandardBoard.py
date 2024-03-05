@@ -56,26 +56,48 @@ def StandardSetup():
     # Configuration of the board
     # [[name, position, neighbors], Hex(radius, resource), Number(value, radius)]
     # The position of each Hex gets updated by the empty hex it is in the same row as
+    # configuration = [
+    #     [['A', A_pos, A_neighbors], Hex('A', hexRadius), Number(circleRadius)],
+    #     [['B', B_pos, B_neighbors], Hex('B',hexRadius), Number(circleRadius)],
+    #     [['C', C_pos, C_neighbors], Hex('C', hexRadius), Number(circleRadius)],
+    #     [['D', D_pos, D_neighbors], Hex('D', hexRadius), Number(circleRadius)],
+    #     [['E', E_pos, E_neighbors], Hex('E', hexRadius), Number(circleRadius)],
+    #     [['F', F_pos, F_neighbors], Hex('F', hexRadius), Number(circleRadius)],
+    #     [['G', G_pos, G_neighbors], Hex('G', hexRadius), Number(circleRadius)],
+    #     [['H', H_pos, H_neighbors], Hex('H', hexRadius), Number(circleRadius)],
+    #     [['I', I_pos, I_neighbors], Hex('I', hexRadius), Number(circleRadius)],
+    #     [['J', J_pos, J_neighbors], Hex('J', hexRadius), Number(circleRadius)],
+    #     [['K', K_pos, K_neighbors], Hex('K', hexRadius), Number(circleRadius)],
+    #     [['L', L_pos, L_neighbors], Hex('L', hexRadius), Number(circleRadius)],
+    #     [['M', M_pos, M_neighbors], Hex('M', hexRadius), Number(circleRadius)],
+    #     [['N', N_pos, N_neighbors], Hex('N', hexRadius), Number(circleRadius)],
+    #     [['O', O_pos, O_neighbors], Hex('O', hexRadius), Number(circleRadius)],
+    #     [['P', P_pos, P_neighbors], Hex('P', hexRadius), Number(circleRadius)],
+    #     [['Q', Q_pos, Q_neighbors], Hex('Q', hexRadius), Number(circleRadius)],
+    #     [['R', R_pos, R_neighbors], Hex('R', hexRadius), Number(circleRadius)],
+    #     [['S', S_pos, S_neighbors], Hex('S', hexRadius), Number(circleRadius)]
+    # ]
+
     configuration = [
-        [['A', A_pos, A_neighbors], Hex('A', hexRadius), Number(circleRadius)],
-        [['B', B_pos, B_neighbors], Hex('B',hexRadius), Number(circleRadius)],
-        [['C', C_pos, C_neighbors], Hex('C', hexRadius), Number(circleRadius)],
-        [['D', D_pos, D_neighbors], Hex('D', hexRadius), Number(circleRadius)],
-        [['E', E_pos, E_neighbors], Hex('E', hexRadius), Number(circleRadius)],
-        [['F', F_pos, F_neighbors], Hex('F', hexRadius), Number(circleRadius)],
-        [['G', G_pos, G_neighbors], Hex('G', hexRadius), Number(circleRadius)],
-        [['H', H_pos, H_neighbors], Hex('H', hexRadius), Number(circleRadius)],
-        [['I', I_pos, I_neighbors], Hex('I', hexRadius), Number(circleRadius)],
-        [['J', J_pos, J_neighbors], Hex('J', hexRadius), Number(circleRadius)],
-        [['K', K_pos, K_neighbors], Hex('K', hexRadius), Number(circleRadius)],
-        [['L', L_pos, L_neighbors], Hex('L', hexRadius), Number(circleRadius)],
-        [['M', M_pos, M_neighbors], Hex('M', hexRadius), Number(circleRadius)],
-        [['N', N_pos, N_neighbors], Hex('N', hexRadius), Number(circleRadius)],
-        [['O', O_pos, O_neighbors], Hex('O', hexRadius), Number(circleRadius)],
-        [['P', P_pos, P_neighbors], Hex('P', hexRadius), Number(circleRadius)],
-        [['Q', Q_pos, Q_neighbors], Hex('Q', hexRadius), Number(circleRadius)],
-        [['R', R_pos, R_neighbors], Hex('R', hexRadius), Number(circleRadius)],
-        [['S', S_pos, S_neighbors], Hex('S', hexRadius), Number(circleRadius)]
+        [['A', A_pos, A_neighbors], Hex('A', hexRadius)],
+        [['B', B_pos, B_neighbors], Hex('B',hexRadius)],
+        [['C', C_pos, C_neighbors], Hex('C', hexRadius)],
+        [['D', D_pos, D_neighbors], Hex('D', hexRadius)],
+        [['E', E_pos, E_neighbors], Hex('E', hexRadius)],
+        [['F', F_pos, F_neighbors], Hex('F', hexRadius)],
+        [['G', G_pos, G_neighbors], Hex('G', hexRadius)],
+        [['H', H_pos, H_neighbors], Hex('H', hexRadius)],
+        [['I', I_pos, I_neighbors], Hex('I', hexRadius)],
+        [['J', J_pos, J_neighbors], Hex('J', hexRadius)],
+        [['K', K_pos, K_neighbors], Hex('K', hexRadius)],
+        [['L', L_pos, L_neighbors], Hex('L', hexRadius)],
+        [['M', M_pos, M_neighbors], Hex('M', hexRadius)],
+        [['N', N_pos, N_neighbors], Hex('N', hexRadius)],
+        [['O', O_pos, O_neighbors], Hex('O', hexRadius)],
+        [['P', P_pos, P_neighbors], Hex('P', hexRadius)],
+        [['Q', Q_pos, Q_neighbors], Hex('Q', hexRadius)],
+        [['R', R_pos, R_neighbors], Hex('R', hexRadius)],
+        [['S', S_pos, S_neighbors], Hex('S', hexRadius)]
     ]
 
-    return Board(configuration, hexRadius, (0,0))
+    return Board(configuration, hexRadius)

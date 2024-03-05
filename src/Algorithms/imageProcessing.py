@@ -1,9 +1,10 @@
-import cv2
-import numpy as np
 from objects.BoardComponents import *
 from objects.StandardBoard import StandardSetup
 from objects.Board import Board
 
+import copy
+import cv2
+import numpy as np
 def threshold_between_values(image, thresh_min, thresh_max):
     # Finding two thresholds and then finding the common part
     _, threshold = cv2.threshold(image, thresh_min, 255, cv2.THRESH_BINARY)
@@ -100,7 +101,7 @@ def find_numbers(image, board : Board):
             circles = np.uint16(np.around(circles))
             for j in circles[0, :]:
                 pos = [offset[0]-box[0]+j[0]+int(centers[i][0]*scaler[0]), offset[1]-box[1]+j[1]+int(centers[i][1]*scaler[1])]
-                positions.append([Number(10), pos])
+                positions.append(Number(10, pos))
             
     return positions
 
@@ -127,7 +128,9 @@ def find_piece(piece : Piece, image):
         cx = int(M['m10'] / M['m00'])
         cy = int(M['m01'] / M['m00'])
 
-        pieces.append([piece, [cx,cy]])
+        copied_piece = copy.copy(piece)
+        copied_piece.position = [cx,cy]
+        pieces.append(copied_piece)
         # Print or use centroid coordinates as needed
         # print(f"Center of mass: ({cx}, {cy})")
 
@@ -190,7 +193,7 @@ def hexagon_mask(image, board):
 
 def display_on_image(cords, image):
     for cord in cords:
-        image = cv2.circle(image, cord[1], 20, (255, 0, 0), 10)
+        image = cv2.circle(image, cord.position, 20, (255, 0, 0), 10)
         
     cv2.namedWindow('output', cv2.WINDOW_NORMAL)
     cv2.imshow('output', image)
@@ -212,7 +215,7 @@ def analyze_board(board, image, pieces = []):
     return locs
 
 
-if __name__ == "__main__":
+def process_image():
     b = StandardSetup()
     b.desert_position = b.empty_spaces[5].shape.xy # for testing
     image = load_image()
@@ -222,3 +225,5 @@ if __name__ == "__main__":
             Road('orange'), Settlememt('orange'), City('orange'), Robber()]
     locs = analyze_board(b, image, pieces)
     display_on_image(locs, image)
+    
+process_image()
