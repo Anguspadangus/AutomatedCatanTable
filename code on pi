@@ -109,21 +109,17 @@ def move_z_axis(gamepiece):
         "home": 0  # Adjust home position if necessary
     }
 
+    # Update hex stack position based on the current hex count
+    gamepiece_mappings["hex stack"] = 30 + hex_count
+    
     if gamepiece in gamepiece_mappings:
         target_position = gamepiece_mappings[gamepiece]
         print(f"Moving Z-axis to {gamepiece} position")
         
            
         # Calculate target steps and direction
-        if gamepiece == "hex stack":
-            target_steps = int(abs((gamepiece_mappings["hex stack"] - hex_count) - current_position_gripper_z) / distance_per_step)
-            direction = stepper.FORWARD if target_position > current_position_gripper_z else stepper.BACKWARD
-        elif gamepiece == "num stack":
-            target_steps = int(abs((gamepiece_mappings["num stack"] - num_count) - current_position_gripper_z) / distance_per_step)
-            direction = stepper.FORWARD if target_position > current_position_gripper_z else stepper.BACKWARD
-        else:
-            target_steps = int(abs(target_position - current_position_gripper_z) / distance_per_step)
-            direction = stepper.FORWARD if target_position > current_position_gripper_z else stepper.BACKWARD
+        target_steps = int(abs(target_position - current_position_gripper_z) / distance_per_step)
+        direction = stepper.FORWARD if target_position > current_position_gripper_z else stepper.BACKWARD
         
         
         try:
@@ -256,30 +252,3 @@ move_xy_axis(0,0)
 #time.sleep(5)
 #kit2.motor3.throttle = 0
 
-"""
-move_xy_axis(x_cord, y_cord)
-pick("hex")
-move_z_axis("home")
-move_xy_axis(place_hex_x, place_hex_y)
-move_z_axis("hex")
-place("hex")
-"""
-
-'''
-# Input lists of absolute positions for X and Y
-positions_list_x = input("Enter a list of X positions (comma-separated) in millimeters: ").split(',')
-positions_list_y = input("Enter a list of Y positions (comma-separated) in millimeters: ").split(',')
-
-# Check if the input lists have the same length
-if len(positions_list_x) != len(positions_list_y):
-    print("Error: X and Y position lists must have the same length.")
-else:
-    # Convert string values to integers
-    positions_list_x = [int(position_x) for position_x in positions_list_x]
-    positions_list_y = [int(position_y) for position_y in positions_list_y]
-
-    # Move to each position in the lists sequentially
-    for x_cord, y_cord in zip(positions_list_x, positions_list_y):
-        pick_and_place_numhex("hex", x_cord, y_cord)
-    move_xy_axis(0, 0)
-'''
