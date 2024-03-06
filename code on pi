@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Feb 28 21:00:43 2024
+Created on Wed Mar  6 11:38:39 2024
 
 @author: Owen Porpora
 """
@@ -74,15 +74,12 @@ def pick(gamepiece):
 
 # Function to execute the place sequence
 def place(gamepiece):
-    global hex_count
-    global num_count
     if gamepiece in ["num", "hex"]:
         kit2.motor3.throttle = 0
         set_gate_valve_blow()
         kit2.motor4.throttle = 1.0
         time.sleep(0.4)
         kit2.motor4.throttle = 0
-        hex_count += 1
     elif gamepiece in ["settlement", "city", "road", "robber"]:
         kit2.motor3.throttle = 0
         set_gate_valve_blow()
@@ -188,14 +185,17 @@ def move_xy_axis(x_cord, y_cord):
 
 #pick hex & num logic
 def pick_and_place_numhex(gamepiece, x_cord, y_cord):
+    global hex_count
+    global num_count
     if gamepiece == "hex" or gamepiece == "num":
         move_xy_axis(x_cord, y_cord)
         pick(gamepiece)
         move_z_axis("hex pick")
         move_xy_axis(place_hex_x,place_hex_y)           #move XY cord
-        move_z_axis("hex")
+        move_z_axis("hex stack")
         place(gamepiece)
         move_z_axis("home")
+        hex_count +=1
     else:
         print("Invalid shape specified.")
         
@@ -215,18 +215,20 @@ def pick_and_place_buildings(gamepiece, x_cord, y_cord):
 
 # Modified pick and place function for picking from stacks
 def pick_from_stack(gamepiece, x_cord, y_cord):
-    
-    if gamepiece == "hex" or gamepiece == "num":
+    global hex_count
+    global num_count
+    if gamepiece == "hex" or gamepiece == "hex stack":
         if gamepiece == "hex":
             move_xy_axis(225, 325)
-            move_z_axis("hex")
+            move_z_axis("hex stack")
             pick(gamepiece)
             move_z_axis("hex pick")
             move_xy_axis(x_cord,y_cord)
             move_z_axis(gamepiece)
             place(gamepiece)
             move_z_axis("home")
-        elif gamepiece == "num" and num_stack_height > 0:
+            hex_count -= 1
+        elif gamepiece == "num":
             move_z_axis("num stack")
             pick(gamepiece)
             move_z_axis("home")
@@ -235,19 +237,15 @@ def pick_from_stack(gamepiece, x_cord, y_cord):
     else:
         print("Invalid shape specified.")
 
-# Call the function with the desired gamepiece
-#pick_and_place_buildings("road")
-
-#time.sleep(10)
 
 # Call the function with the desired shape
 
 pick_and_place_numhex("hex",100,200)
-#pick_and_place_numhex("hex",100,278)
+pick_and_place_numhex("hex",100,278)
 #pick_and_place_numhex("hex",100,356)
 time.sleep(2)
 pick_from_stack("hex",100,200)
-
+pick_from_stack("hex",100,278)
 move_xy_axis(0,0)
 
 #pick("hex")
