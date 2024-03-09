@@ -53,7 +53,7 @@ class CameraRig():
         self.K = np.array([[113.49354735654141, 0.0, 371.5786534104595], [0.0, 116.6060998517777, 205.3861581256824], [0.0, 0.0, 1.0]])
         self.D = np.array([[0.12694667308062602], [0.6454345033192549], [-0.5465056949757663], [0.25172851391836865]])
         self.H = np.array([[ 3.98379589e-01, 8.28098023e-02, 5.48000000e+02], [-6.12605764e-03,-3.84345357e-01, 1.03000000e+02], [-6.28872633e-05, 2.09711523e-04, 1.00000000e+00]])
-        self.picture = None
+        self.image = None
         
     def take_picture(self):
         # TODO owen
@@ -62,19 +62,25 @@ class CameraRig():
         # take picture
         # turn off light
         # self.light.stop()
-        # self.picture = undistort_picture(picture)
+        # self.image = undistort_picture(picture)
         pass
     
-    def undistort_picture(self, picture):
+    def undistort_picture(self):
         # Can use Knew to change scale so it fits
-        self.picture = cv2.fisheye.undistortImage(picture, self.K, D=self.D)
-    
+        self.image = cv2.fisheye.undistortImage(self.image, self.K, D=self.D)
+
     def convert_to_world(self, positions_camera_space):
+        positions_world_space = []
         for position in positions_camera_space:
-            position = self.convert_to_world_single(position)
+            positions_world_space.append(self.convert_to_world_single(position))
+            
+        return positions_world_space
             
     def convert_to_world_single(self, position_camera_space):
-        position_camera_space = cv2.convertPointsToHomogeneous(position_camera_space)
+        if not isinstance(position_camera_space, np.ndarray):
+            position_camera_space = np.array(position_camera_space)
+            
+        position_camera_space = np.append(position_camera_space, 1.0)
         world_space = np.matmul(np.linalg.inv(self.H), position_camera_space)
 
         w_x = world_space[0] / world_space[2]
@@ -87,7 +93,7 @@ class CameraRig():
         w_y = w_y + self.pose[1]
         
         return [w_x,w_y]
-    
+
     def threshold_between_values(self, image, thresh_min, thresh_max):
         # Finding two thresholds and then finding the common part
         _, threshold = cv2.threshold(image, thresh_min, 255, cv2.THRESH_BINARY)
@@ -127,8 +133,7 @@ class CameraRig():
 
     def load_image(self, filepath = 'src\\test\\images\\robber1.jpeg'):
         image = cv2.imread(filepath)
-        self.picture = image
-        return image
+        self.image = image
 
     def crop_to_hexes(self, image, board : Board):
         centers = [space.shape.xy for space in board.empty_spaces if space.shape.xy != board.desert_position]
@@ -179,11 +184,13 @@ class CameraRig():
                 circles = np.uint16(np.around(circles))
                 for j in circles[0, :]:
                     pos = [offset[0]-box[0]+j[0]+int(centers[i][0]*scaler[0]), offset[1]-box[1]+j[1]+int(centers[i][1]*scaler[1])]
+                    pos = self.convert_to_world_single(pos)
                     positions.append(Number(10, pos))
         
-        return self.convert_to_world(positions)
+        return positions
 
     def find_piece(self, piece : Piece, image):
+        # print(type(piece))
         pieces = []
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv_image, piece.color[0], piece.color[1])
@@ -207,16 +214,17 @@ class CameraRig():
             cy = int(M['m01'] / M['m00'])
 
             copied_piece = copy.deepcopy(piece)
-            copied_piece.xy = [cx,cy]
+            position = self.convert_to_world_single([cx,cy])
+            copied_piece.xy = position
             pieces.append(copied_piece)
-    
+
             # Print or use centroid coordinates as needed
             # print(f"Center of mass: ({cx}, {cy})")
 
             # Optionally, draw a circle at the center of mass
             # image = cv2.circle(image, (cx, cy), 20, (255, 0, 0), 10)
                 
-        return self.convert_to_world(pieces)
+        return pieces
 
     def find_pieces(self, pieces, image):
         piece_list = []
@@ -272,7 +280,8 @@ class CameraRig():
 
     def display_on_image(self, cords):
         for cord in cords:
-            image = cv2.circle(self.image, cord.xy, 20, (255, 0, 0), 10)
+            pos = [int(cord.position[0]), int(cord.position[1])]
+            image = cv2.circle(self.image, pos, 20, (255, 0, 0), 10)
             
         cv2.namedWindow('output', cv2.WINDOW_NORMAL)
         cv2.imshow('output', image)
@@ -289,7 +298,7 @@ class CameraRig():
         
         else:
             # If not a number or a robber we can mask
-            treated_image = self.hexagon_mask(self.image, board)
+            treated_image = self.hexagon_mask(board)
             locs = self.find_pieces(pieces, treated_image)
         
         return locs

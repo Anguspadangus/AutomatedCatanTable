@@ -14,7 +14,7 @@ def on_mouse_click(event, x, y, flags, param):
         cv2.destroyAllWindows()
 
 cam = CameraRig(DCMotor(HAT_SETUP("motor_M1")), DCMotor(HAT_SETUP("motor_M2")), [150.,200.,476.25])
-picture = cv2.imread('src\\test\\calibration_images\\RealTest.jpg')
+picture = cv2.imread('src\\calibration_methods\\calibration_images\\RealTest.jpg')
 cam.undistort_picture(picture)
 # cam.picture = picture
 

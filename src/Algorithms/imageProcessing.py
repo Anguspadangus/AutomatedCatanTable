@@ -5,6 +5,7 @@ from objects.Board import Board
 import copy
 import cv2
 import numpy as np
+
 def threshold_between_values(image, thresh_min, thresh_max):
     # Finding two thresholds and then finding the common part
     _, threshold = cv2.threshold(image, thresh_min, 255, cv2.THRESH_BINARY)

@@ -6,13 +6,28 @@ import time
 class MotorKit():
     def __init__(self, address):
         self.address = address
-        self.stepper1 = "A"
-        self.stepper2 = "B"
-        self.motor_M1 = "M1"
+        self.stepper1 = stepper("A")
+        self.stepper2 = stepper("B")
+        self.motor_M1 = Basic_DC_Motor("M1")
+        self.motor_M2 = Basic_DC_Motor("M2")
+        self.motor_M3 = Basic_DC_Motor("M3")
+        
+class Basic_DC_Motor():
+    def __init__(self, type) -> None:
+        self.type = type
+        self.throttle = 0
         
 class stepper():
     FORWARD = "F"
     BAKCWARD = "B"
+    MICROSTEP = 0
+    SINGLE = 1
+    
+    def __init__(self, type):
+        self.type = type
+    
+    def onestep(self, direction, style):
+        pass
         
 class GPIO():
     BCM = 0
@@ -134,9 +149,9 @@ class Motor(ABC):
 class Stepper(Motor):
     # The translator is the attachment to the motor, example a timing pully has 20 teeth per rotation
     # each spaced 2 mm. So the translator is 20 teeth/rotation * 2 mm/tooth = 40 mm/rotation
-    def __init__(self, steps_per_rotation, transalor, setup_function, control_function, *args):
+    def __init__(self, steps_per_rotation, translator, setup_function, control_function, *args):
         super().__init__(setup_function)
-        self.distance_per_step = transalor / steps_per_rotation # mm/step
+        self.distance_per_step = translator / steps_per_rotation # mm/step
         self.current_cartisan = 0.0
         self.control_function = control_function
         self.control_args = args
@@ -166,15 +181,13 @@ class Stepper(Motor):
         
 class DCMotor(Motor):
     def __init__(self, setup_function):
-        self.motor = super().__init__(setup_function)
+       super().__init__(setup_function)
     
     def start(self, throttle):
         self.motor.throttle = throttle
-        pass
     
     def stop(self):
         self.motor.throttle = 0
-        pass
     
     # If there is a need to save and load these motors, we'll do it
     def save(self, name):
