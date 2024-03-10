@@ -1,5 +1,5 @@
 from objects.BoardComponents import *
-from objects.StandardBoard import StandardSetup
+from test.StandardBoard import StandardSetup
 from objects.Board import Board
 
 import copy

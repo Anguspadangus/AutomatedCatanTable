@@ -1,4 +1,4 @@
-from objects.StandardBoard import StandardSetup
+from test.StandardBoard import StandardSetup
 from objects.BoardComponents import *
 from objects.TableComponents import CameraRig
 from objects.Motor import *

@@ -1,60 +1,66 @@
 from abc import abstractmethod, ABC
 import json
 import time
+import os
 
-# TEST CLASSES
-class MotorKit():
-    def __init__(self, address):
-        self.address = address
-        self.stepper1 = stepper("A")
-        self.stepper2 = stepper("B")
-        self.motor_M1 = Basic_DC_Motor("M1")
-        self.motor_M2 = Basic_DC_Motor("M2")
-        self.motor_M3 = Basic_DC_Motor("M3")
+if os.name == 'nt':
+    # WINDOWS CLASSES 
+    class MotorKit():
+        def __init__(self, address):
+            self.address = address
+            self.stepper1 = stepper("A")
+            self.stepper2 = stepper("B")
+            self.motor_M1 = Basic_DC_Motor("M1")
+            self.motor_M2 = Basic_DC_Motor("M2")
+            self.motor_M3 = Basic_DC_Motor("M3")
+            
+    class Basic_DC_Motor():
+        def __init__(self, type) -> None:
+            self.type = type
+            self.throttle = 0
+            
+    class stepper():
+        FORWARD = "F"
+        BAKCWARD = "B"
+        MICROSTEP = 0
+        SINGLE = 1
+        DOUBLE = 2
         
-class Basic_DC_Motor():
-    def __init__(self, type) -> None:
-        self.type = type
-        self.throttle = 0
+        def __init__(self, type):
+            self.type = type
         
-class stepper():
-    FORWARD = "F"
-    BAKCWARD = "B"
-    MICROSTEP = 0
-    SINGLE = 1
+        def onestep(self, direction, style):
+            pass
+            
+    class GPIO():
+        BCM = 0
+        OUT = 0
+        LOW = 0
+        HIGH = 0
+            
+        def __init__(self):
+            pass
+            
+        def setmode(self, *args):
+            pass
+        def setup(self, *args):
+            pass
+        def output(self, *args):
+            pass
+        
+    def gpio_cleanup():
+        pass
+else:
+    import RPi.GPIO as GPIO
+    from adafruit_motorkit import MotorKit
+    from adafruit_motor import stepper
     
-    def __init__(self, type):
-        self.type = type
-    
-    def onestep(self, direction, style):
-        pass
-        
-class GPIO():
-    BCM = 0
-    OUT = 0
-    LOW = 0
-    HIGH = 0
-        
-    def __init__(self):
-        pass
-        
-    def setmode(self, *args):
-        pass
-    def setup(self, *args):
-        pass
-    def output(self, *args):
-        pass
-    
-def gpio_cleanup():
-    pass
-# TEST CLASSES
-
-def GPIO_SETUP(MOTOR_DIRECTION_PIN, MOTOR_STEP_PIN):
+def GPIO_SETUP(*args):
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(MOTOR_DIRECTION_PIN, GPIO.OUT)  # Direction
-    GPIO.setup(MOTOR_STEP_PIN, GPIO.OUT)       # Step
+    for arg in args:
+        GPIO.setup(arg, GPIO.OUT)  # PIN
 
-def GPIO_CONTROL(steps, MOTOR_DIRECTION_PIN, MOTOR_STEP_PIN):
+def GPIO_CONTROL_STEPPER(steps, MOTOR_DIRECTION_PIN, MOTOR_STEP_PIN):
     if steps < 0:
         GPIO.output(MOTOR_DIRECTION_PIN, GPIO.LOW)   # Set to LOW for counterclockwise
     else:
@@ -67,6 +73,9 @@ def GPIO_CONTROL(steps, MOTOR_DIRECTION_PIN, MOTOR_STEP_PIN):
         time.sleep(0.0005)
         GPIO.output(MOTOR_STEP_PIN, GPIO.LOW)
         time.sleep(0.0005)
+        
+def GPIO_CONTROL_GATE(MOTOR_DIRECTION_PIN, level):
+    GPIO.output(MOTOR_DIRECTION_PIN, level)
 
 def GPIO_DESTRUCTOR():
     # call on __del__()
@@ -94,11 +103,11 @@ def HAT_CONTROL(motor, steps):
     for i in range(steps):
         # Switch to microstepping for the last 5 steps
         if i >= steps - 5:
-            motor.onestep(direction=direction, style=stepper.MICROSTEP)
-            time.sleep(0.0001)
-        else:
             motor.onestep(direction=direction, style=stepper.SINGLE)
-            time.sleep(0.0001)
+            time.sleep(0.001)
+        else:
+            motor.onestep(direction=direction, style=stepper.DOUBLE)
+            time.sleep(0.001)
 
 def LINKED_HAT_CONTROL(motor_1, motor_2, steps_1, steps_2):
     if steps_1 > 0:
@@ -118,18 +127,16 @@ def LINKED_HAT_CONTROL(motor_1, motor_2, steps_1, steps_2):
         if i <= steps_1:
             if i >= steps_1 - 5:
                 motor_1.onestep(direction=direction_1, style=stepper.MICROSTEP)
-                time.sleep(0.0001)
             else:
                 motor_1.onestep(direction=direction_1, style=stepper.SINGLE)
-                time.sleep(0.0001)
                 
         if i <= steps_2:
             if i >= steps_2 - 5:
                 motor_2.onestep(direction=direction_2, style=stepper.MICROSTEP)
-                time.sleep(0.0001)
             else:
                 motor_2.onestep(direction=direction_2, style=stepper.SINGLE)
-                time.sleep(0.0001)
+                
+        time.sleep(0.001)
 
 class Motor(ABC):
     
@@ -149,7 +156,7 @@ class Motor(ABC):
 class Stepper(Motor):
     # The translator is the attachment to the motor, example a timing pully has 20 teeth per rotation
     # each spaced 2 mm. So the translator is 20 teeth/rotation * 2 mm/tooth = 40 mm/rotation
-    def __init__(self, steps_per_rotation, translator, setup_function, control_function, *args):
+    def __init__(self, steps_per_rotation, translator, setup_function, control_function = None, *args):
         super().__init__(setup_function)
         self.distance_per_step = translator / steps_per_rotation # mm/step
         self.current_cartisan = 0.0
@@ -178,6 +185,24 @@ class Stepper(Motor):
     
     def _set_current_cartisan(self, value):
         self.current_cartisan = value
+        
+class Gate_Valve(Motor):
+    def __init__(self, setup_function, control_function, pin):
+        super().__init__(setup_function)
+        self.control_function = control_function
+        self.pin = pin
+        
+    def high(self):
+        self.control_function(self.pin, GPIO.HIGH)
+        
+    def low(self):
+        self.control_function(self.pin, GPIO.LOW)
+
+    def save(self, name):
+        pass
+
+    def load(self, name):
+        pass
         
 class DCMotor(Motor):
     def __init__(self, setup_function):

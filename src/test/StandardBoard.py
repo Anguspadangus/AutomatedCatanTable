@@ -80,7 +80,7 @@ def StandardSetup():
 
     configuration = [
         [['A', A_pos, A_neighbors], Hex('A', hexRadius)],
-        [['B', B_pos, B_neighbors], Hex('B',hexRadius)],
+        [['B', B_pos, B_neighbors], Hex('B', hexRadius)],
         [['C', C_pos, C_neighbors], Hex('C', hexRadius)],
         [['D', D_pos, D_neighbors], Hex('D', hexRadius)],
         [['E', E_pos, E_neighbors], Hex('E', hexRadius)],
@@ -100,4 +100,7 @@ def StandardSetup():
         [['S', S_pos, S_neighbors], Hex('S', hexRadius)]
     ]
 
-    return Board(configuration, hexRadius)
+    return Board(configuration)
+
+if __name__ == '__main__':
+    StandardSetup()

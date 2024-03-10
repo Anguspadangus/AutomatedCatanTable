@@ -1,6 +1,6 @@
 from objects.Motor import *
 from objects.BoardComponents import *
-from objects.StandardBoard import StandardSetup
+from test.StandardBoard import StandardSetup
 from objects.Board import Board
 
 import numpy as np

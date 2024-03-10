@@ -3,7 +3,7 @@ from objects.Gantry import *
 from objects.Motor import *
 from objects.TableComponents import *
 from objects.BoardComponents import *
-from objects.StandardBoard import StandardSetup
+from test.StandardBoard import StandardSetup
 from Algorithms.imageProcessing import process_image
 
 def setup():

@@ -54,13 +54,14 @@ class Tile(Suckable):
         
 class Number(Tile):
     def __init__(self, radius = 10, xy = [0,0]):
-        super().__init__(Circle(xy, radius=radius), 1, xy)
+        super().__init__(Circle(xy, radius=radius), 2, xy)
         
 # Resource Hex, has a hexagonal radius, a name, and a center position
 class Hex(Tile):
     def __init__(self, name, radius, xy = [0,0]):
         super().__init__(RegularPolygon(xy, 6, radius=radius), 2, xy)
         self.name = name
+        self.isDesert = False
 
 class Container(abc.ABC):
     def __init__(self, position, max_height = math.inf):
@@ -129,11 +130,42 @@ class Bin(Container):
      \ / \ / \ /
 '''
 # what if empty hexes where also tile stacks? in that way we could calculate the height of where to put numbers
-class EmptyHex(Tile):
-    def __init__(self, radius, neighbors, xy = [0,0]):
-        super().__init__(RegularPolygon(xy, 6, radius=radius), 0, xy)
+class EmptyHex(TileStack):
+    def __init__(self, name, neighbors, xy = [0,0]):
+        super().__init__(xy, 37)
+        self.name = name
         self.neighbors = neighbors
         self.neighbor_count = 0
+        
         for neighbor in neighbors:
             if neighbor == '0':
                 self.neighbor_count += 1
+                
+        self.stack_height -= 2
+                
+    def push(self, tile):
+        tile.position = self.position 
+        self.stack.append(tile)
+        self.stack_height += tile.height
+        
+        return True
+    
+    def reveal(self, tile):
+        # The number can be anywhere on the tile
+        if not isinstance(tile, Number):
+            tile.position = self.position
+            
+        self.stack.append(tile)
+        self.stack_height += tile.height
+        
+        return True
+
+                
+# class EmptyHex(Tile):
+#     def __init__(self, radius, neighbors, xy = [0,0]):
+#         super().__init__(RegularPolygon(xy, 6, radius=radius), 0, xy)
+#         self.neighbors = neighbors
+#         self.neighbor_count = 0
+#         for neighbor in neighbors:
+#             if neighbor == '0':
+#                 self.neighbor_count += 1

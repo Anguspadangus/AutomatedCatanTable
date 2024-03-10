@@ -12,6 +12,7 @@ class MotorKit():
         self.motor_M1 = Basic_DC_Motor("M1")
         self.motor_M2 = Basic_DC_Motor("M2")
         self.motor_M3 = Basic_DC_Motor("M3")
+        self.motor_M4 = Basic_DC_Motor("M4")
         
 class Basic_DC_Motor():
     def __init__(self, type) -> None:
@@ -23,6 +24,7 @@ class stepper():
     BAKCWARD = "B"
     MICROSTEP = 0
     SINGLE = 1
+    DOUBLE = 2
     
     def __init__(self, type):
         self.type = type
@@ -49,11 +51,6 @@ class GPIO():
 def gpio_cleanup():
     pass
 # TEST CLASSES
-
-def GPIO_SETUP(MOTOR_DIRECTION_PIN, MOTOR_STEP_PIN):
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(MOTOR_DIRECTION_PIN, GPIO.OUT)  # Direction
-    GPIO.setup(MOTOR_STEP_PIN, GPIO.OUT)       # Step
 
 def GPIO_CONTROL(steps, MOTOR_DIRECTION_PIN, MOTOR_STEP_PIN):
     if steps < 0:
@@ -85,3 +82,17 @@ def HAT_CONTROL(motor, steps):
         direction = stepper.BAKCWARD
         
     steps = abs(int(steps))
+    
+def LINKED_HAT_CONTROL(motor_1, motor_2, steps_1, steps_2):
+    if steps_1 > 0:
+        direction_1 = stepper.FORWARD
+    else:
+        direction_1 = stepper.BAKCWARD
+        
+    if steps_2 > 0:
+        direction_2 = stepper.FORWARD
+    else:
+        direction_2 = stepper.BAKCWARD
+        
+    steps_1 = abs(int(steps_1))
+    steps_2 = abs(int(steps_2))
