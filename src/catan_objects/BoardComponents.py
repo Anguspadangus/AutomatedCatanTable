@@ -1,4 +1,3 @@
-from matplotlib.patches import RegularPolygon, Circle
 import abc
 import math
 
@@ -44,8 +43,8 @@ class Settlememt(Piece):
 
 # Base class of all Catan tiles. Has a shape and a color.
 class Tile(Suckable):
-    def __init__(self, shape, height = 0, xy = [0,0]):
-        self.shape = shape
+    def __init__(self, radius, height = 0, xy = [0,0]):
+        self.radius = radius
         super().__init__(height, 'cup', xy)
         return
     
@@ -54,12 +53,12 @@ class Tile(Suckable):
         
 class Number(Tile):
     def __init__(self, radius = 10, xy = [0,0]):
-        super().__init__(Circle(xy, radius=radius), 2, xy)
+        super().__init__(radius, 2, xy)
         
 # Resource Hex, has a hexagonal radius, a name, and a center position
 class Hex(Tile):
     def __init__(self, name, radius, xy = [0,0]):
-        super().__init__(RegularPolygon(xy, 6, radius=radius), 2, xy)
+        super().__init__(radius, 2, xy)
         self.name = name
         self.isDesert = False
 
