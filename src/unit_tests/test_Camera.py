@@ -1,8 +1,8 @@
-from test.StandardBoard import StandardSetup
-from objects.BoardComponents import *
-from objects.TableComponents import CameraRig
-from objects.Motor import *
-from test.motor_test_methods import *
+from unit_tests.StandardBoard import StandardSetup
+from catan_objects.BoardComponents import *
+from catan_objects.TableComponents import CameraRig
+from catan_objects.Motor import *
+from unit_tests.motor_test_methods import *
 
 import unittest
 import os
@@ -76,25 +76,25 @@ class CVTest(unittest.TestCase):
     def test_analyze_board_numbers(self):
         camera = CameraRig(DCMotor(HAT_SETUP("motor_M1")), None)
         camera.H = np.array([[ 1.0, 0.0, 0.0], [ 0.0, 1.0, 0.0], [ 0.0, 0.0, 1.0]])
-        board = StandardSetup()
-        board.desert_position = board.empty_spaces[5].position # for testing
+        catan_board = StandardSetup()
+        catan_board.desert_position = catan_board.empty_spaces[5].position # for testing
         
         for image_path in self.images:
             camera.load_image(image_path)
-            numbers = camera.analyze_board(board, [Number()])
+            numbers = camera.analyze_board(catan_board, [Number()])
             # camera.display_on_image(numbers)
             self.assertEqual(len(numbers), 18)
             
     def test_analyze_board_pieces(self):
         camera = CameraRig(DCMotor(HAT_SETUP("motor_M1")), None)
         camera.H = np.array([[ 1.0, 0.0, 0.0], [ 0.0, 1.0, 0.0], [ 0.0, 0.0, 1.0]])
-        board = StandardSetup()
-        board.desert_position = board.empty_spaces[5].position # for testing
+        catan_board = StandardSetup()
+        catan_board.desert_position = catan_board.empty_spaces[5].position # for testing
         
         camera.load_image('src\\test\\images\\settlements1.jpeg')
         colors = ['red', 'blue', 'white', 'orange']
         for color in colors:
-            pieces = camera.analyze_board(board, [Settlememt(color), City(color), Road(color)])
+            pieces = camera.analyze_board(catan_board, [Settlememt(color), City(color), Road(color)])
             self.assertTrue(len(pieces) != 0)
             # Maybe one day we'll get this good
             # self.assertTrue(any(isinstance(piece, Settlememt) for piece in pieces))
@@ -104,11 +104,11 @@ class CVTest(unittest.TestCase):
     def test_analyze_board_robber(self):
         camera = CameraRig(DCMotor(HAT_SETUP("motor_M1")), None)
         camera.H = np.array([[ 1.0, 0.0, 0.0], [ 0.0, 1.0, 0.0], [ 0.0, 0.0, 1.0]])
-        board = StandardSetup()
-        board.desert_position = board.empty_spaces[5].position # for testing
+        catan_board = StandardSetup()
+        catan_board.desert_position = catan_board.empty_spaces[5].position # for testing
         
         camera.load_image('src\\test\\images\\settlements1.jpeg')
-        robber = camera.analyze_board(board, [Robber()])
+        robber = camera.analyze_board(catan_board, [Robber()])
         self.assertTrue(len(robber) != 0)
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
-from objects.BoardComponents import *
-from objects.Board import Board
+from catan_objects.BoardComponents import *
+from catan_objects.CatanBoard import CatanBoard
 import math
 
 """
@@ -74,7 +74,7 @@ def Setup(A_pos):
         [['S', S_pos, S_neighbors], Hex('S', long_hex_Radius)]
     ]
 
-    return Board(configuration)
+    return CatanBoard(configuration)
 
 if __name__ == '__main__':
     Setup()

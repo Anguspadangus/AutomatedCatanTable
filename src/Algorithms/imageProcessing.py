@@ -1,6 +1,6 @@
-from objects.BoardComponents import *
-from test.StandardBoard import StandardSetup
-from objects.Board import Board
+from catan_objects.BoardComponents import *
+from unit_tests.StandardBoard import StandardSetup
+from catan_objects.CatanBoard import CatanBoard
 
 import copy
 import cv2
@@ -53,8 +53,8 @@ def load_image(filepath = 'src\\test\\images\\robber1.jpeg'):
     image = cv2.imread(filepath)
     return image
 
-def crop_to_hexes(image, board : Board):
-    centers = [space.shape.xy for space in board.empty_spaces if space.shape.xy != board.desert_position]
+def crop_to_hexes(image, catan_board : CatanBoard):
+    centers = [space.shape.xy for space in catan_board.empty_spaces if space.shape.xy != catan_board.desert_position]
     offset = (900, 1100)
     scaler = (200, 200)
     box = (250, 250)
@@ -71,9 +71,9 @@ def crop_to_hexes(image, board : Board):
         
     return cropped_images
 
-def find_numbers(image, board : Board):
-    cropped_images = crop_to_hexes(image, board)
-    centers = [space.shape.xy for space in board.empty_spaces if space.shape.xy != board.desert_position]
+def find_numbers(image, catan_board : CatanBoard):
+    cropped_images = crop_to_hexes(image, catan_board)
+    centers = [space.shape.xy for space in catan_board.empty_spaces if space.shape.xy != catan_board.desert_position]
     offset = (900, 1100)
     scaler = (200, 200)
     box = (250, 250)
@@ -164,7 +164,7 @@ def construct_hexagon(center, sideLength):
         
     return hexagon_vertices
 
-def hexagon_mask(image, board):
+def hexagon_mask(image, catan_board):
     # Define the size of the hexagon
     side_length = 1700
 
@@ -182,7 +182,7 @@ def hexagon_mask(image, board):
     result_image = cv2.bitwise_and(image, image, mask=mask)
     
     # now apply to every single hex
-    centers = [space.shape.xy for space in board.empty_spaces if space.shape.xy != board.desert_position]
+    centers = [space.shape.xy for space in catan_board.empty_spaces if space.shape.xy != catan_board.desert_position]
     offset = (900, 1100)
     scaler = (200, 200)
     
@@ -201,8 +201,8 @@ def display_on_image(cords, image):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     
-def analyze_board(board, image, pieces = []):
-    treated_image = hexagon_mask(image, board)
+def analyze_board(catan_board, image, pieces = []):
+    treated_image = hexagon_mask(image, catan_board)
     robber = None
     for i, obj in enumerate(pieces):
         if isinstance(obj, Robber):
@@ -211,7 +211,7 @@ def analyze_board(board, image, pieces = []):
     if robber is not None:
         locs.extend(find_pieces([robber], image))
         
-    locs.extend(find_numbers(image, board))
+    locs.extend(find_numbers(image, catan_board))
     
     return locs
 

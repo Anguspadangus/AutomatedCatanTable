@@ -1,7 +1,7 @@
-from objects.Motor import *
-from objects.BoardComponents import *
-from test.StandardBoard import StandardSetup
-from objects.Board import Board
+from catan_objects.Motor import *
+from catan_objects.BoardComponents import *
+from unit_tests.StandardBoard import StandardSetup
+from catan_objects.CatanBoard import CatanBoard
 
 import numpy as np
 import cv2
@@ -135,8 +135,8 @@ class CameraRig():
         image = cv2.imread(filepath)
         self.image = image
 
-    def crop_to_hexes(self, image, board : Board):
-        centers = [space.shape.xy for space in board.empty_spaces if space.shape.xy != board.desert_position]
+    def crop_to_hexes(self, image, catan_board : CatanBoard):
+        centers = [space.position for space in catan_board.empty_spaces if space.position != catan_board.desert_position]
         offset = (900, 1100)
         scaler = (200, 200)
         box = (250, 250)
@@ -153,9 +153,9 @@ class CameraRig():
             
         return cropped_images
 
-    def find_numbers(self, image, board : Board):
-        cropped_images = self.crop_to_hexes(image, board)
-        centers = [space.shape.xy for space in board.empty_spaces if space.shape.xy != board.desert_position]
+    def find_numbers(self, image, catan_board : CatanBoard):
+        cropped_images = self.crop_to_hexes(image, catan_board)
+        centers = [space.position for space in catan_board.empty_spaces if space.position != catan_board.desert_position]
         offset = (900, 1100)
         scaler = (200, 200)
         box = (250, 250)
@@ -250,7 +250,7 @@ class CameraRig():
             
         return hexagon_vertices
 
-    def hexagon_mask(self, board):
+    def hexagon_mask(self, catan_board):
         # Define the size of the hexagon
         side_length = 1700
 
@@ -268,7 +268,7 @@ class CameraRig():
         result_image = cv2.bitwise_and(self.image, self.image, mask=mask)
         
         # now apply to every single hex
-        centers = [space.shape.xy for space in board.empty_spaces if space.shape.xy != board.desert_position]
+        centers = [space.position for space in catan_board.empty_spaces if space.position != catan_board.desert_position]
         offset = (900, 1100)
         scaler = (200, 200)
         
@@ -288,27 +288,17 @@ class CameraRig():
         cv2.waitKey(0)
         cv2.destroyAllWindows()
         
-    def analyze_board(self, board, pieces = []):
+    def analyze_board(self, catan_board, pieces = []):
         # If there is a robber, we will only go for all of them? May need to change this
         if isinstance(pieces[0], Robber):
             locs = self.find_pieces(pieces, self.image)
         
         elif isinstance(pieces[0], Number):
-            locs = self.find_numbers(self.image, board)
+            locs = self.find_numbers(self.image, catan_board)
         
         else:
             # If not a number or a robber we can mask
-            treated_image = self.hexagon_mask(board)
+            treated_image = self.hexagon_mask(catan_board)
             locs = self.find_pieces(pieces, treated_image)
         
         return locs
-    
-    # def process_image(self):
-    #     b = StandardSetup()
-    #     b.desert_position = b.empty_spaces[5].shape.xy # for testing
-    #     pieces = [Road('red'), Settlememt('red'), City('red'),
-    #             Road('blue'), Settlememt('blue'), City('blue'),
-    #             Road('white'), Settlememt('white'), City('white'),
-    #             Road('orange'), Settlememt('orange'), City('orange'), Robber()]
-    #     locs = self.analyze_board(b, pieces)
-    #     self.display_on_image(locs)

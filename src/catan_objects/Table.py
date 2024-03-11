@@ -1,5 +1,5 @@
-from objects.TableComponents import *
-from objects.Gantry import Gantry
+from catan_objects.TableComponents import *
+from catan_objects.Gantry import Gantry
 
 class Table():
     def __init__(self, gantry: Gantry, camera: CameraRig, lift: SingleDegreeComponent, cover: SingleDegreeComponent):
@@ -32,13 +32,13 @@ class Table():
         pass
     
     def remove_robber(self):
-        robber = self.camera.analyze_board(self.gantry.board, [Robber()])
+        robber = self.camera.analyze_board(self.gantry.catan_board, [Robber()])
         for piece in robber:
             self.gantry.pick_up(piece)
             self.gantry.place(self.gantry.robber)
                 
     def remove_pieces_by_color(self, color):
-        pieces = self.camera.analyze_board(self.gantry.board, [Road(color), Settlememt(color), City(color)])
+        pieces = self.camera.analyze_board(self.gantry.catan_board, [Road(color), Settlememt(color), City(color)])
         for piece in pieces:
             self.gantry.pick_up(piece)
             if color == 'red':
@@ -57,29 +57,29 @@ class Table():
             # Can check image and update
             
     def remove_numbers(self):
-        number = self.camera.analyze_board(self.gantry.board, [Number()])
+        number = self.camera.analyze_board(self.gantry.catan_board, [Number()])
         for piece in number:
             self.gantry.pick_up(piece)
             self.gantry.place(self.gantry.number_stacks)
             
     def remove_hexes(self):
-        hexes = self.gantry.board.remove_resources()
+        hexes = self.gantry.catan_board.remove_resources()
         for hex in hexes:
             self.gantry.pick_up(hex)
             self.gantry.place(self.gantry.tile_stacks)
             
     def place_hexes(self):
-        hexes = self.gantry.board.place_resources()
+        hexes = self.gantry.catan_board.place_resources()
         for hex in hexes:
             self.gantry.pick_up(self.gantry.tile_stacks)
             self.gantry.place(hex)
             
     def place_numbers(self):
-        numbers = self.gantry.board.place_numbers()
+        numbers = self.gantry.catan_board.place_numbers()
         for number in numbers:
             self.gantry.pick_up(self.gantry.number_stacks)
             self.gantry.place(number)
             
     def place_robber(self):
         self.gantry.pick_up(self.gantry.robber)
-        self.gantry.place(self.gantry.board.desert_position)
+        self.gantry.place(self.gantry.catan_board.desert_position)

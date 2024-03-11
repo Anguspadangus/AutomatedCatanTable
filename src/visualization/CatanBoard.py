@@ -1,9 +1,9 @@
-from tile import *
+from visualization.tile import *
 from collections import deque
 import random
 import copy
 
-class Board():
+class CatanBoard():
     def __init__(self, configuration, unit = 1):
         # The possible spaces on the catan board
         self.m_emptySpaces = [EmptyHex(unit, config[0][0], config[0][2], config[0][1]) for config in configuration]

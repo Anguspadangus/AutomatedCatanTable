@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
-from objects.TableComponents import CameraRig
-from objects.Motor import *
+from catan_objects.TableComponents import CameraRig
+from catan_objects.Motor import *
 
 global_x, global_y = None, None
 

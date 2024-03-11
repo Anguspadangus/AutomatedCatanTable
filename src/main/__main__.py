@@ -1,9 +1,9 @@
-from objects.Table import Table
-from objects.Gantry import *
-from objects.Motor import *
-from objects.TableComponents import *
-from objects.BoardComponents import *
-from test.StandardBoard import StandardSetup
+from catan_objects.Table import Table
+from catan_objects.Gantry import *
+from catan_objects.Motor import *
+from catan_objects.TableComponents import *
+from catan_objects.BoardComponents import *
+from unit_tests.StandardBoard import StandardSetup
 from Algorithms.imageProcessing import process_image
 
 def setup():

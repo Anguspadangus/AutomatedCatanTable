@@ -1,4 +1,4 @@
-from objects.Motor import Motor
+from catan_objects.Motor import Motor
 
 """
 These are test methods for adafruit motor kit, when we are ready for integration tests we won't use these methods

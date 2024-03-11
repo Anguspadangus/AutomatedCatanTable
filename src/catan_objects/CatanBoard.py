@@ -1,4 +1,4 @@
-from objects.BoardComponents import *
+from catan_objects.BoardComponents import *
 
 import random
 import copy
@@ -6,7 +6,7 @@ import json
 import math
 import numpy as np
 
-class Board():
+class CatanBoard():
     def __init__(self, configuration):
         # The possible spaces on the catan board
         self.empty_spaces = [EmptyHex(config[0][0], config[0][2], config[0][1]) for config in configuration]

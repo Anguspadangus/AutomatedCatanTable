@@ -1,5 +1,5 @@
-from objects.Motor import *
-from test.motor_test_methods import *
+from catan_objects.Motor import *
+from unit_tests.motor_test_methods import *
 
 import unittest
 

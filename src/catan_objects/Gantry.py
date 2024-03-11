@@ -1,6 +1,6 @@
-from objects.Motor import *
-from objects.BoardComponents import *
-from objects.Board import Board
+from catan_objects.Motor import *
+from catan_objects.BoardComponents import *
+from catan_objects.CatanBoard import CatanBoard
 
 class PumpAssembly():
     def __init__(self, valve: DCMotor, intake: DCMotor, outtake: DCMotor = None):
@@ -99,7 +99,7 @@ class Mount():
             
     
 class Gantry():
-    def __init__(self, linked_motor: LinkedMotor, mount: Mount, catan_board: Board, 
+    def __init__(self, linked_motor: LinkedMotor, mount: Mount, catan_board: CatanBoard, 
                  tile_stack_positions, number_stack_positions, robber_position,
                  red_position, blue_position, orange_position, white_position):
         
