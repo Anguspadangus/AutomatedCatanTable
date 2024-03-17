@@ -10,9 +10,10 @@ if os.name == 'nt':
             self.address = address
             self.stepper1 = stepper("A")
             self.stepper2 = stepper("B")
-            self.motor_M1 = Basic_DC_Motor("M1")
-            self.motor_M2 = Basic_DC_Motor("M2")
-            self.motor_M3 = Basic_DC_Motor("M3")
+            self.motor1 = Basic_DC_Motor("M1")
+            self.motor2 = Basic_DC_Motor("M2")
+            self.motor3 = Basic_DC_Motor("M3")
+            self.motor4 = Basic_DC_Motor("M4")
             
     class Basic_DC_Motor():
         def __init__(self, type) -> None:
@@ -21,7 +22,7 @@ if os.name == 'nt':
             
     class stepper():
         FORWARD = "F"
-        BAKCWARD = "B"
+        BACKWARD = "B"
         MICROSTEP = 0
         SINGLE = 1
         DOUBLE = 2
@@ -70,9 +71,11 @@ def GPIO_CONTROL_STEPPER(steps, MOTOR_DIRECTION_PIN, MOTOR_STEP_PIN):
     
     for i in range(steps):
         GPIO.output(MOTOR_STEP_PIN, GPIO.HIGH)
-        time.sleep(0.0005)
+        time.sleep(0.001)
         GPIO.output(MOTOR_STEP_PIN, GPIO.LOW)
-        time.sleep(0.0005)
+        time.sleep(0.001)
+        
+    time.sleep(0.25)
         
 def GPIO_CONTROL_GATE(MOTOR_DIRECTION_PIN, level):
     GPIO.output(MOTOR_DIRECTION_PIN, level)
@@ -81,9 +84,9 @@ def GPIO_DESTRUCTOR():
     # call on __del__()
     gpio_cleanup()
 
-def HAT_SETUP(type, address = '0x60'):
+def HAT_SETUP(type, address = 0x60):
     if address not in Motor.s_hats:
-        Motor.s_hats[address] = MotorKit(address)
+        Motor.s_hats[address] = MotorKit(address=address)
         
     try:
         motor = getattr(Motor.s_hats[address], type)
@@ -96,47 +99,38 @@ def HAT_CONTROL(motor, steps):
     if steps > 0:
         direction = stepper.FORWARD
     else:
-        direction = stepper.BAKCWARD
+        direction = stepper.BACKWARD
         
     steps = abs(int(steps))
     
     for i in range(steps):
-        # Switch to microstepping for the last 5 steps
-        if i >= steps - 5:
-            motor.onestep(direction=direction, style=stepper.SINGLE)
-            time.sleep(0.001)
-        else:
-            motor.onestep(direction=direction, style=stepper.DOUBLE)
-            time.sleep(0.001)
+        motor.onestep(direction=direction, style=stepper.DOUBLE)
+        time.sleep(0.001)
 
 def LINKED_HAT_CONTROL(motor_1, motor_2, steps_1, steps_2):
     if steps_1 > 0:
-        direction_1 = stepper.FORWARD
+        direction_1 = stepper.BACKWARD
     else:
-        direction_1 = stepper.BAKCWARD
+        direction_1 = stepper.FORWARD
         
     if steps_2 > 0:
-        direction_2 = stepper.FORWARD
+        direction_2 = stepper.BACKWARD
     else:
-        direction_2 = stepper.BAKCWARD
+        direction_2 = stepper.FORWARD
         
     steps_1 = abs(int(steps_1))
     steps_2 = abs(int(steps_2))
     
     for i in range(max(steps_1, steps_2)):
         if i <= steps_1:
-            if i >= steps_1 - 5:
-                motor_1.onestep(direction=direction_1, style=stepper.MICROSTEP)
-            else:
-                motor_1.onestep(direction=direction_1, style=stepper.SINGLE)
+            motor_1.onestep(direction=direction_1, style=stepper.DOUBLE)
                 
         if i <= steps_2:
-            if i >= steps_2 - 5:
-                motor_2.onestep(direction=direction_2, style=stepper.MICROSTEP)
-            else:
-                motor_2.onestep(direction=direction_2, style=stepper.SINGLE)
+                motor_2.onestep(direction=direction_2, style=stepper.DOUBLE)
                 
         time.sleep(0.001)
+        
+    time.sleep(0.25)
 
 class Motor(ABC):
     
@@ -231,7 +225,7 @@ class LinkedMotor(Motor):
         steps_1 = self.motor_1.position_to_steps(value[0])
         steps_2 = self.motor_1.position_to_steps(value[1])
         
-        self.control_function(self.motor_1, self.motor_2, steps_1, steps_2)
+        self.control_function(self.motor_1.motor, self.motor_2.motor, steps_1, steps_2)
         
         self.motor_1._set_current_cartisan(value[0])
         self.motor_2._set_current_cartisan(value[1])

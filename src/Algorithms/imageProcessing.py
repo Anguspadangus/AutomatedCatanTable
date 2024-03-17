@@ -218,7 +218,7 @@ def analyze_board(catan_board, image, pieces = []):
 
 def process_image():
     b = StandardSetup()
-    b.desert_position = b.empty_spaces[5].shape.xy # for testing
+    b.desert_position = b.empty_spaces[5].position # for testing
     image = load_image()
     pieces = [Road('red'), Settlememt('red'), City('red'),
             Road('blue'), Settlememt('blue'), City('blue'),

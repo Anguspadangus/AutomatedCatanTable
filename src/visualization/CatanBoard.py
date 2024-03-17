@@ -52,9 +52,9 @@ class CatanBoard():
         self.RemoveResources()
     
     # Updates the neighbors of a hex given the possible emptyHexes and the placed Hex
-    def UpdateNeighbors(self, hex, emptyHexes):
+    def UpdateNeighbors(self, hexagon, emptyHexes):
         for emptyHex in emptyHexes:
-            if hex.m_name in emptyHex.m_neighbors:
+            if hexagon.m_name in emptyHex.m_neighbors:
                 emptyHex.m_neighborCount += 1
                 
     def PlaceResources(self):

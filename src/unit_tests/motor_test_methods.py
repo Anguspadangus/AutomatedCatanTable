@@ -9,10 +9,10 @@ class MotorKit():
         self.address = address
         self.stepper1 = stepper("A")
         self.stepper2 = stepper("B")
-        self.motor_M1 = Basic_DC_Motor("M1")
-        self.motor_M2 = Basic_DC_Motor("M2")
-        self.motor_M3 = Basic_DC_Motor("M3")
-        self.motor_M4 = Basic_DC_Motor("M4")
+        self.motor1 = Basic_DC_Motor("M1")
+        self.motor2 = Basic_DC_Motor("M2")
+        self.motor3 = Basic_DC_Motor("M3")
+        self.motor4 = Basic_DC_Motor("M4")
         
 class Basic_DC_Motor():
     def __init__(self, type) -> None:
@@ -64,7 +64,7 @@ def GPIO_DESTRUCTOR():
     # call on __del__()
     gpio_cleanup()
 
-def HAT_SETUP(type, address = '0x60'):
+def HAT_SETUP(type, address = 0x60):
     if address not in Motor.s_hats:
         Motor.s_hats[address] = MotorKit(address)
         

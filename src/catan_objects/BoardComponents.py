@@ -60,7 +60,7 @@ class Hex(Tile):
     def __init__(self, name, radius, xy = [0,0]):
         super().__init__(radius, 2, xy)
         self.name = name
-        self.isDesert = False
+        self.is_desert = False
 
 class Container(abc.ABC):
     def __init__(self, position, max_height = math.inf):
@@ -130,17 +130,21 @@ class Bin(Container):
 '''
 # what if empty hexes where also tile stacks? in that way we could calculate the height of where to put numbers
 class EmptyHex(TileStack):
-    def __init__(self, name, neighbors, xy = [0,0]):
+    def __init__(self, name, neighbors, xy = [0,0], radius = 45):
         super().__init__(xy, 37)
         self.name = name
         self.neighbors = neighbors
         self.neighbor_count = 0
+        self.radius = radius
         
         for neighbor in neighbors:
             if neighbor == '0':
                 self.neighbor_count += 1
                 
         self.stack_height -= 2
+        
+    def __eq__(self, other):
+        return self.name == other.name
                 
     def push(self, tile):
         tile.position = self.position 
@@ -158,13 +162,3 @@ class EmptyHex(TileStack):
         self.stack_height += tile.height
         
         return True
-
-                
-# class EmptyHex(Tile):
-#     def __init__(self, radius, neighbors, xy = [0,0]):
-#         super().__init__(RegularPolygon(xy, 6, radius=radius), 0, xy)
-#         self.neighbors = neighbors
-#         self.neighbor_count = 0
-#         for neighbor in neighbors:
-#             if neighbor == '0':
-#                 self.neighbor_count += 1

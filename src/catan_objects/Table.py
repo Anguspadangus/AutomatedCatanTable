@@ -12,6 +12,11 @@ class Table():
         # drop lift
         # close cover
         # take picture
+        
+        # Add numbers and robber to stack
+        self.reveal(Number(10))
+        self.reveal(Robber())
+
         # take & place robber off
         self.remove_robber()
         # take & place pieces off
@@ -28,13 +33,15 @@ class Table():
         self.place_robber()
         # open cover
         # raise lift
-        
-        pass
+    
+    def reveal(self, to_reveal):
+        objs = self.camera.analyze_board(self.gantry.catan_board, to_reveal)
+        self.gantry.catan_board.add_to_board(objs)
     
     def remove_robber(self):
-        robber = self.camera.analyze_board(self.gantry.catan_board, [Robber()])
-        for piece in robber:
-            self.gantry.pick_up(piece)
+        robber_hexes = self.gantry.catan_board.get_robber()
+        for hexagon in robber_hexes:
+            self.gantry.pick_up(hexagon)
             self.gantry.place(self.gantry.robber)
                 
     def remove_pieces_by_color(self, color):
@@ -57,22 +64,22 @@ class Table():
             # Can check image and update
             
     def remove_numbers(self):
-        number = self.camera.analyze_board(self.gantry.catan_board, [Number()])
-        for piece in number:
-            self.gantry.pick_up(piece)
+        hexes = self.gantry.catan_board.remove_tiles()
+        for hexagon in hexes:
+            self.gantry.pick_up(hexagon)
             self.gantry.place(self.gantry.number_stacks)
             
     def remove_hexes(self):
-        hexes = self.gantry.catan_board.remove_resources()
-        for hex in hexes:
-            self.gantry.pick_up(hex)
+        hexes = self.gantry.catan_board.remove_tiles()
+        for hexagon in hexes:
+            self.gantry.pick_up(hexagon)
             self.gantry.place(self.gantry.tile_stacks)
             
     def place_hexes(self):
         hexes = self.gantry.catan_board.place_resources()
-        for hex in hexes:
+        for hexagon in hexes:
             self.gantry.pick_up(self.gantry.tile_stacks)
-            self.gantry.place(hex)
+            self.gantry.place(hexagon)
             
     def place_numbers(self):
         numbers = self.gantry.catan_board.place_numbers()
@@ -81,5 +88,6 @@ class Table():
             self.gantry.place(number)
             
     def place_robber(self):
-        self.gantry.pick_up(self.gantry.robber)
-        self.gantry.place(self.gantry.catan_board.desert_position)
+        while len(self.gantry.robber.stack) != 0:     
+            self.gantry.pick_up(self.gantry.robber)
+            self.gantry.place(self.gantry.catan_board.get_desert_hex())

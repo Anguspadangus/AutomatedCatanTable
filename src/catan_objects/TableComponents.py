@@ -85,8 +85,6 @@ class CameraRig():
 
         w_x = world_space[0] / world_space[2]
         w_y = world_space[1] / world_space[2]
-
-        # TODO: Rotation component
         
         # Adding position, the rotation and position probably need to be defined as a matrix that we multiply
         w_x = w_x + self.pose[0]
@@ -131,34 +129,39 @@ class CameraRig():
             best_contour = contours[max_area_index]
         return best_contour
 
-    def load_image(self, filepath = 'src\\test\\images\\robber1.jpeg'):
+    def load_image(self, filepath = 'src\\unit_tests\\images\\robber1.jpeg'):
         image = cv2.imread(filepath)
         self.image = image
 
-    def crop_to_hexes(self, image, catan_board : CatanBoard):
+    def crop_to_hexes(self, image, catan_board : CatanBoard, box):
         centers = [space.position for space in catan_board.empty_spaces if space.position != catan_board.desert_position]
-        offset = (900, 1100)
-        scaler = (200, 200)
-        box = (250, 250)
         
         cropped_images = []
-        
-        color = (0,255,0)
-        radius = 50
+
         for center in centers:
-            pos = (int(center[0]*scaler[0]+offset[0]), int(center[1]*scaler[1]+offset[1]))
+            # pos = (int(center[0]*scaler[0]+offset[0]), int(center[1]*scaler[1]+offset[1]))
+            pos = center
             # image = cv2.circle(image, pos, radius, color, -1)
             image2 = image[pos[1] - box[1]: pos[1] + box[1], pos[0] - box[0]: pos[0] + box[0]]
             cropped_images.append(image2)
+            # cv2.circle(image, pos, 20, (255,255,255), 3)
+            
+            # cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+            # cv2.imshow('output', image2)
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
+        
+        # Test to validate centers (scalar, offset)
+        # cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+        # cv2.imshow('output', image)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
             
         return cropped_images
 
-    def find_numbers(self, image, catan_board : CatanBoard):
-        cropped_images = self.crop_to_hexes(image, catan_board)
-        centers = [space.position for space in catan_board.empty_spaces if space.position != catan_board.desert_position]
-        offset = (900, 1100)
-        scaler = (200, 200)
-        box = (250, 250)
+    def find_numbers(self, image, catan_board : CatanBoard, box = (270, 270)):
+        cropped_images = self.crop_to_hexes(image, catan_board, box)
+        centers = [space.position for space in catan_board.empty_spaces if space.position != catan_board.desert_position]        
         positions = []
         
         for i, im in enumerate(cropped_images):
@@ -183,10 +186,15 @@ class CameraRig():
             if circles is not None:
                 circles = np.uint16(np.around(circles))
                 for j in circles[0, :]:
-                    pos = [offset[0]-box[0]+j[0]+int(centers[i][0]*scaler[0]), offset[1]-box[1]+j[1]+int(centers[i][1]*scaler[1])]
+                    pos = [-box[0]+j[0]+centers[i][0], -box[1]+j[1]+centers[i][1]]
+                    # cv2.circle(image, pos, 11, (255,255,255), 5)        
                     pos = self.convert_to_world_single(pos)
                     positions.append(Number(10, pos))
-        
+                    
+        # cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+        # cv2.imshow('output', image)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
         return positions
 
     def find_piece(self, piece : Piece, image):
@@ -215,7 +223,7 @@ class CameraRig():
 
             copied_piece = copy.deepcopy(piece)
             position = self.convert_to_world_single([cx,cy])
-            copied_piece.xy = position
+            copied_piece.position = position
             pieces.append(copied_piece)
 
             # Print or use centroid coordinates as needed

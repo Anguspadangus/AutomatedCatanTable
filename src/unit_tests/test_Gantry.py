@@ -26,21 +26,21 @@ class CVTest(unittest.TestCase):
         Motor.s_hats.clear()
     
     def test_init(self):
-        camera = CameraRig(DCMotor(HAT_SETUP("motor_M1")), DCMotor(HAT_SETUP("motor_M2")))
-        pump_1 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor_M4")), DCMotor(HAT_SETUP("motor_M1", "0x62")))
-        pump_2 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor_M3", "0x62")), DCMotor(HAT_SETUP("motor_M4", "0x62")))
-        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', "0x64"), HAT_CONTROL), pump_1, pump_2)
+        camera = CameraRig(DCMotor(HAT_SETUP("motor1")), DCMotor(HAT_SETUP("motor2")))
+        pump_1 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor4")), DCMotor(HAT_SETUP("motor1", 0x62)))
+        pump_2 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor3", 0x62)), DCMotor(HAT_SETUP("motor4", 0x62)))
+        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', 0x64), HAT_CONTROL), pump_1, pump_2)
         catan_board = StandardSetup()
-        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', "0x64"), None),
-                        Stepper(200, 8, HAT_SETUP('stepper1', '0x66'), None), LINKED_HAT_CONTROL),
+        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', 0x64), None),
+                        Stepper(200, 8, HAT_SETUP('stepper1', 0x66), None), LINKED_HAT_CONTROL),
                         mount, catan_board, [[10,0], [20,0], [30,0]], [[10,10], [20,10], [30,10]], [10,20],
                         [10, 30], [10, 40], [10, 50], [10,60])
     
     def test_move_to_xy(self):
         xy = [10,20]
-        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', "0x64"), HAT_CONTROL), None, None)
-        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', "0x64"), None),
-                        Stepper(200, 8, HAT_SETUP('stepper1', '0x66'), None), LINKED_HAT_CONTROL),
+        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', 0x64), HAT_CONTROL), None, None)
+        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', 0x64), None),
+                        Stepper(200, 8, HAT_SETUP('stepper1', 0x66), None), LINKED_HAT_CONTROL),
                         mount, None, [[10,0], [20,0], [30,0]], [[10,10], [20,10], [30,10]], [10,20],
                         [10, 30], [10, 40], [10, 50], [10,60])
 
@@ -56,9 +56,9 @@ class CVTest(unittest.TestCase):
         
     def test_move_to_piece(self):
         road_position = [50., 20.]
-        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', "0x64"), HAT_CONTROL), None, None)
-        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', "0x64"), None),
-                        Stepper(200, 8, HAT_SETUP('stepper1', '0x66'), None), LINKED_HAT_CONTROL),
+        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', 0x64), HAT_CONTROL), None, None)
+        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', 0x64), None),
+                        Stepper(200, 8, HAT_SETUP('stepper1', 0x66), None), LINKED_HAT_CONTROL),
                         mount, None, [[10,0], [20,0], [30,0]], [[10,10], [20,10], [30,10]], [10,20],
                         [10, 30], [10, 40], [10, 50], [10,60])
         
@@ -69,24 +69,24 @@ class CVTest(unittest.TestCase):
         
     def test_pick_up_tile(self):
         tile_position = [50., 20.]
-        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', "0x64"), HAT_CONTROL), None, None)
-        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', "0x64"), None),
-                        Stepper(200, 8, HAT_SETUP('stepper1', '0x66'), None), LINKED_HAT_CONTROL),
+        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', 0x64), HAT_CONTROL), None, None)
+        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', 0x64), None),
+                        Stepper(200, 8, HAT_SETUP('stepper1', 0x66), None), LINKED_HAT_CONTROL),
                         mount, None, [[10,0], [20,0], [30,0]], [[10,10], [20,10], [30,10]], [10,20],
                         [10, 30], [10, 40], [10, 50], [10,60])
         
-        hex = Hex("empty", 1, tile_position)
-        gantry.move_to(hex)
+        hexagon = Hex("empty", 1, tile_position)
+        gantry.move_to(hexagon)
         self.assertEqual(gantry.x_and_y_motor.motor_1.current_cartisan, tile_position[0])
         self.assertEqual(gantry.x_and_y_motor.motor_2.current_cartisan, tile_position[1] + mount.offset)
         
     def test_piece_to_bin(self):
         road_position = [50., 20.]
-        pump_1 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor_M4")), DCMotor(HAT_SETUP("motor_M1", "0x62")))
-        pump_2 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor_M3", "0x62")), DCMotor(HAT_SETUP("motor_M4", "0x62")))
-        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', "0x64"), HAT_CONTROL), pump_1, pump_2)
-        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', "0x64"), None),
-                        Stepper(200, 8, HAT_SETUP('stepper1', '0x66'), None), LINKED_HAT_CONTROL),
+        pump_1 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor4")), DCMotor(HAT_SETUP("motor1", 0x62)))
+        pump_2 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor3", 0x62)), DCMotor(HAT_SETUP("motor4", 0x62)))
+        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', 0x64), HAT_CONTROL), pump_1, pump_2)
+        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', 0x64), None),
+                        Stepper(200, 8, HAT_SETUP('stepper1', 0x66), None), LINKED_HAT_CONTROL),
                         mount, None, [[10,0], [20,0], [30,0]], [[10,10], [20,10], [30,10]], [10,20],
                         [10, 30], [10, 40], [10, 50], [10,60])
         
@@ -104,20 +104,20 @@ class CVTest(unittest.TestCase):
         
     def test_pick_up_tile(self):
         tile_position = [50., 20.]
-        pump_1 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor_M4")), DCMotor(HAT_SETUP("motor_M1", "0x62")))
-        pump_2 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor_M3", "0x62")), DCMotor(HAT_SETUP("motor_M4", "0x62")))
-        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', "0x64"), HAT_CONTROL), pump_1, pump_2)
-        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', "0x64"), None),
-                        Stepper(200, 8, HAT_SETUP('stepper1', '0x66'), None), LINKED_HAT_CONTROL),
+        pump_1 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor4")), DCMotor(HAT_SETUP("motor1", 0x62)))
+        pump_2 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor3", 0x62)), DCMotor(HAT_SETUP("motor4", 0x62)))
+        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', 0x64), HAT_CONTROL), pump_1, pump_2)
+        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', 0x64), None),
+                        Stepper(200, 8, HAT_SETUP('stepper1', 0x66), None), LINKED_HAT_CONTROL),
                         mount, None, [[10,0]], [[10,10], [20,10], [30,10]], [10,20],
                         [10, 30], [10, 40], [10, 50], [10,60])
         
-        hex = Hex("empty", 1, tile_position)
-        gantry.move_to(hex)
+        hexagon = Hex("empty", 1, tile_position)
+        gantry.move_to(hexagon)
         self.assertIsNone(gantry.mount.current_suckable)
         
-        gantry.pick_up(hex)
-        self.assertIs(gantry.mount.current_suckable, hex)
+        gantry.pick_up(hexagon)
+        self.assertIs(gantry.mount.current_suckable, hexagon)
         
         gantry.place(gantry.tile_stacks)
         self.assertIsNone(gantry.mount.current_suckable)
@@ -126,11 +126,11 @@ class CVTest(unittest.TestCase):
         
     def test_no_more_tile_stacks(self):
         tile_position = [50., 20.]
-        pump_1 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor_M4")), DCMotor(HAT_SETUP("motor_M1", "0x62")))
-        pump_2 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor_M3", "0x62")), DCMotor(HAT_SETUP("motor_M4", "0x62")))
-        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', "0x64"), HAT_CONTROL), pump_1, pump_2)
-        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', "0x64"), None),
-                        Stepper(200, 8, HAT_SETUP('stepper1', '0x66'), None), LINKED_HAT_CONTROL),
+        pump_1 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor4")), DCMotor(HAT_SETUP("motor1", 0x62)))
+        pump_2 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor3", 0x62)), DCMotor(HAT_SETUP("motor4", 0x62)))
+        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', 0x64), HAT_CONTROL), pump_1, pump_2)
+        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', 0x64), None),
+                        Stepper(200, 8, HAT_SETUP('stepper1', 0x66), None), LINKED_HAT_CONTROL),
                         mount, None, [[10,0]], [[10,10], [20,10], [30,10]], [10,20],
                         [10, 30], [10, 40], [10, 50], [10,60])
         
@@ -148,11 +148,11 @@ class CVTest(unittest.TestCase):
     
     def test_tile_stacks(self):
         tile_position = [50., 20.]
-        pump_1 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor_M4")), DCMotor(HAT_SETUP("motor_M1", "0x62")))
-        pump_2 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor_M3", "0x62")), DCMotor(HAT_SETUP("motor_M4", "0x62")))
-        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', "0x64"), HAT_CONTROL), pump_1, pump_2)
-        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', "0x64"), None),
-                        Stepper(200, 8, HAT_SETUP('stepper1', '0x66'), None), LINKED_HAT_CONTROL),
+        pump_1 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor4")), DCMotor(HAT_SETUP("motor1", 0x62)))
+        pump_2 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor3", 0x62)), DCMotor(HAT_SETUP("motor4", 0x62)))
+        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', 0x64), HAT_CONTROL), pump_1, pump_2)
+        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', 0x64), None),
+                        Stepper(200, 8, HAT_SETUP('stepper1', 0x66), None), LINKED_HAT_CONTROL),
                         mount, None, [[10,0], [20,0]], [[10,10], [20,10], [30,10]], [10,20],
                         [10, 30], [10, 40], [10, 50], [10,60])
         
@@ -168,11 +168,11 @@ class CVTest(unittest.TestCase):
     def test_tile_stacks_remove(self):
         tile_position = [50., 20.]
         place_position = [1., 3,]
-        pump_1 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor_M4")), DCMotor(HAT_SETUP("motor_M1", "0x62")))
-        pump_2 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor_M3", "0x62")), DCMotor(HAT_SETUP("motor_M4", "0x62")))
-        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', "0x64"), HAT_CONTROL), pump_1, pump_2)
-        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', "0x64"), None),
-                        Stepper(200, 8, HAT_SETUP('stepper1', '0x66'), None), LINKED_HAT_CONTROL),
+        pump_1 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor4")), DCMotor(HAT_SETUP("motor1", 0x62)))
+        pump_2 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor3", 0x62)), DCMotor(HAT_SETUP("motor4", 0x62)))
+        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', 0x64), HAT_CONTROL), pump_1, pump_2)
+        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', 0x64), None),
+                        Stepper(200, 8, HAT_SETUP('stepper1', 0x66), None), LINKED_HAT_CONTROL),
                         mount, None, [[100,100], [75,25]], [], [10,20],
                         [10, 30], [10, 40], [10, 50], [10,60])
         
@@ -203,11 +203,11 @@ class CVTest(unittest.TestCase):
     def test_tile_stacks_remove_same_tile(self):
         tile_position = [50., 20.]
         place_position = [1., 3,]
-        pump_1 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor_M4")), DCMotor(HAT_SETUP("motor_M1", "0x62")))
-        pump_2 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor_M3", "0x62")), DCMotor(HAT_SETUP("motor_M4", "0x62")))
-        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', "0x64"), HAT_CONTROL), pump_1, pump_2)
-        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', "0x64"), None),
-                        Stepper(200, 8, HAT_SETUP('stepper1', '0x66'), None), LINKED_HAT_CONTROL),
+        pump_1 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor4")), DCMotor(HAT_SETUP("motor1", 0x62)))
+        pump_2 = PumpAssembly(Gate_Valve(GPIO_SETUP(6), GPIO_CONTROL_GATE, 6), DCMotor(HAT_SETUP("motor3", 0x62)), DCMotor(HAT_SETUP("motor4", 0x62)))
+        mount = Mount(Stepper(200, 8, HAT_SETUP('stepper1', 0x64), HAT_CONTROL), pump_1, pump_2)
+        gantry = Gantry(LinkedMotor(Stepper(200, 8, HAT_SETUP('stepper2', 0x64), None),
+                        Stepper(200, 8, HAT_SETUP('stepper1', 0x66), None), LINKED_HAT_CONTROL),
                         mount, None, [[100,100], [75,25]], [], [10,20],
                         [10, 30], [10, 40], [10, 50], [10,60])
         
@@ -230,7 +230,7 @@ class CVTest(unittest.TestCase):
         self.assertIs(gantry.mount.current_suckable, thick_tile)
         self.assertNotEqual(gantry.x_and_y_motor.motor_1.current_cartisan, gantry.tile_stacks[0].position[0])
         self.assertNotEqual(gantry.x_and_y_motor.motor_2.current_cartisan, gantry.tile_stacks[0].position[1] + mount.offset)
-            
+              
     
 if __name__ == '__main__':
     unittest.main()

@@ -25,8 +25,8 @@ class CVTest(unittest.TestCase):
             motor = Motor(HAT_SETUP('stepper1'))
             
     def test_init_DC_hat(self):
-        motor = DCMotor(HAT_SETUP("motor_M1"))
-        self.assertIn('0x60', motor.s_hats)
+        motor = DCMotor(HAT_SETUP("motor1"))
+        self.assertIn(0x60, motor.s_hats)
         self.assertEqual(motor.motor.type, 'M1')
         
     def test_init_DC_hat_invalid(self):
@@ -34,22 +34,22 @@ class CVTest(unittest.TestCase):
         self.assertIs(motor.motor, None)
         
     def test_init_DC_multiple_hat(self):
-        motor = DCMotor(HAT_SETUP("motor_M1"))
-        motor2 = DCMotor(HAT_SETUP("motor_M2"))
+        motor = DCMotor(HAT_SETUP("motor1"))
+        motor2 = DCMotor(HAT_SETUP("motor2"))
         
-        self.assertIn('0x60', motor.s_hats)
+        self.assertIn(0x60, motor.s_hats)
         self.assertEqual(len(motor.s_hats), 1)
         self.assertIs(motor.s_hats, motor2.s_hats)
         
     def test_init_DC_hat_multiple(self):
-        motor1 = DCMotor(HAT_SETUP("motor_M1"))
-        motor2 = DCMotor(HAT_SETUP("motor_M1","0x62"))
-        motor3 = DCMotor(HAT_SETUP("motor_M1","0x64"))
-        motor4 = DCMotor(HAT_SETUP("motor_M2","0x64"))
+        motor1 = DCMotor(HAT_SETUP("motor1"))
+        motor2 = DCMotor(HAT_SETUP("motor1",0x62))
+        motor3 = DCMotor(HAT_SETUP("motor1",0x64))
+        motor4 = DCMotor(HAT_SETUP("motor2",0x64))
         
-        self.assertIn('0x60', motor1.s_hats)
-        self.assertIn('0x62', motor1.s_hats)
-        self.assertIn('0x64', motor1.s_hats)
+        self.assertIn(0x60, motor1.s_hats)
+        self.assertIn(0x62, motor1.s_hats)
+        self.assertIn(0x64, motor1.s_hats)
         
         self.assertEqual(len(motor1.s_hats), 3)
         self.assertIs(motor1.s_hats, motor2.s_hats)
@@ -57,7 +57,7 @@ class CVTest(unittest.TestCase):
         self.assertIs(motor1.s_hats, motor4.s_hats)
         
     def test_DC_start(self):
-        motor1 = DCMotor(HAT_SETUP("motor_M1"))
+        motor1 = DCMotor(HAT_SETUP("motor1"))
         motor1.start(1)
         self.assertEqual(motor1.motor.throttle, 1)
         
@@ -75,7 +75,7 @@ class CVTest(unittest.TestCase):
         
     def test_init_Stepper_Hat_Setup(self):    
         stepper1 = Stepper(200, 8, HAT_SETUP('stepper1'), HAT_CONTROL)
-        self.assertIn('0x60', stepper1.s_hats)
+        self.assertIn(0x60, stepper1.s_hats)
         self.assertEqual(stepper1.motor.type, 'A')
         
     def test_init_Stepper_move_to(self):    
@@ -96,7 +96,7 @@ if __name__ == '__main__':
 # LM.move_to([20, 10])
 # M3 = Stepper(200, 8, HAT_SETUP('stepper1', '0x72'), HAT_CONTROL)
 
-# DC = DCMotor(HAT_SETUP("motor_M1"))
+# DC = DCMotor(HAT_SETUP("motor1"))
 
 # G1 = Stepper(200, 8, GPIO_SETUP(20, 32), GPIO_CONTROL, 20, 32)
 # G1.move_to(20)

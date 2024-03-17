@@ -27,8 +27,8 @@ class BoardVisualizer():
     # Initial setup for the board
     def Init(self):
         # Python doesn't offer a stack or queue in the std so have to use somehting like this
-        for hex in reversed(self.m_removalSequenceHexes):
-            self.m_ax.add_patch(hex.m_shape)
+        for hexagon in reversed(self.m_removalSequenceHexes):
+            self.m_ax.add_patch(hexagon.m_shape)
 
         for number in reversed(self.m_removalSequenceNumbers):     
             self.m_ax.add_patch(number.m_shape)

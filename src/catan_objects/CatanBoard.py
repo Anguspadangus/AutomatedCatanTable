@@ -9,14 +9,14 @@ import numpy as np
 class CatanBoard():
     def __init__(self, configuration):
         # The possible spaces on the catan board
-        self.empty_spaces = [EmptyHex(config[0][0], config[0][2], config[0][1]) for config in configuration]
+        self.empty_spaces = [EmptyHex(config[0][0], config[0][2], config[0][1], config[0][3]) for config in configuration]
         
         # Position of the desert tile
-        desert_position = self.load_desert()
+        self.desert_position = self.load_desert()
         
         for i, resource in enumerate(configuration):
-            if self.empty_spaces[i].position == desert_position:
-                resource[1].isDesert = True
+            if self.empty_spaces[i].position == self.desert_position:
+                resource[1].is_desert = True
                 
             self.empty_spaces[i].push(resource[1])
  
@@ -24,7 +24,7 @@ class CatanBoard():
         # The lazy way
         i = 0
         for number in numbers:
-            if not self.empty_spaces[i].stack[0].isDesert:
+            if not self.empty_spaces[i].stack[0].is_desert:
                 self.empty_spaces[i].reveal(number)
                 i += 1
             else:
@@ -44,6 +44,7 @@ class CatanBoard():
                     # add it to the empty_hex
                     empty_hex.reveal(obj)
                     # If there exists one already there choose closest one?
+                    break
             
     # Remove numbers or hexes from an already set board randomly
     def remove_tiles(self):
@@ -51,43 +52,45 @@ class CatanBoard():
         removal_order = np.random.permutation(self.empty_spaces).tolist()
         # TODO CHECK THIS
         if (isinstance(self.empty_spaces[0].stack[-1], Number) or isinstance(self.empty_spaces[1].stack[-1], Number)):
-            for hex in removal_order:
-                if hex.stack[0].isDesert:
-                    removal_order.remove(hex)
+            for hexagon in removal_order:
+                if hexagon.stack[0].is_desert:
+                    removal_order.remove(hexagon)
                     break
             
         return removal_order
     
     # Updates the neighbors of a hex given the possible emptyHexes and the placed Hex
-    def update_neighbors(self, hex, empty_hexes):
+    def update_neighbors(self, hexagon, empty_hexes):
         for empty_hex in empty_hexes:
-            if hex.name in empty_hex.neighbors:
+            if hexagon.name in empty_hex.neighbors:
                 empty_hex.neighbor_count += 1
-
-## START HERE##
-    # we do not want to push it here, instead this acts as "in what order do I place the resources in?"
-    def place_resources(self, resources):
+    
+    # Returns a place order for the hexes, will update the desert position when it is placed.
+    def place_resources(self):
         place_order = []
-        # assuming its completely empty
-        # Want to make a deepcopy so we can reuse the empty hexes
         copy_empty_spaces = copy.copy(self.empty_spaces)
-            
-        while len(resources) != 0:
-            # Select random empty tile
+        while len(copy_empty_spaces) != 0:
             available_hex = self.select_empty_tile_with_neighbors(copy_empty_spaces)
             copy_empty_spaces.remove(available_hex)
+            self.update_neighbors(available_hex, copy_empty_spaces)
             
-            # Select top of deque
-            removed_resource = resources.pop()
-            self.update_neighbors(removed_resource, copy_empty_spaces)
+            place_order.append(available_hex)
             
-            # Check if the resource removed was the desert Hex, the update the new position
-            if (removed_resource.isDesert):
-                desert_position = available_hex.position
-                self.save_desert(desert_position)
+        return place_order
             
-            place_order.append(copy_empty_spaces)
-    
+    def place_numbers(self):
+        place_order = []
+        # This should be a clean shallow copy (ref)
+        copy_empty_spaces = [space for space in self.empty_spaces if space.position != self.desert_position]
+        
+        while len(copy_empty_spaces) != 0:
+            available_hex = self.select_empty_tile(copy_empty_spaces)
+            copy_empty_spaces.remove(available_hex)
+            
+            place_order.append(available_hex)
+            
+        return place_order
+            
     def select_empty_tile(self, empty_spaces):
         random_available_hex = random.choice(empty_spaces)
         return random_available_hex
@@ -98,19 +101,18 @@ class CatanBoard():
         random_available_hex = random.choice(empty_available_hexes)
         return random_available_hex
     
-    # Same implementation as PlaceResources(). But we can place the numbers in any order
-    def place_numbers(self, numbers):
-        copy_empty_spaces = copy.deepcopy(self.empty_spaces)
-        
-        while len(self.number_deque) != 0:
-            # Select random empty tile
-            available_hex = self.select_empty_tile(copy_empty_spaces)
-            copy_empty_spaces.remove(available_hex)
-            if available_hex.position != self.desert_position:
-                removed_number = numbers.pop()
-                removed_number.position = available_hex.position
+    def get_robber(self):
+        tiles = []
+        for tile in self.empty_spaces:
+            if isinstance(tile.stack[-1], Robber):
+                tiles.append(tile)
                 
-                self.numbers.append(removed_number)
+        return tiles
+    
+    def get_desert_hex(self):
+        for tile in self.empty_spaces:
+            if tile.position == self.desert_position:
+                return tile
     
     def load_desert(self):
         f = open('src\Algorithms\desertPosition.json')
@@ -118,6 +120,6 @@ class CatanBoard():
         f.close()
         return tuple(data["pos"])
 
-    def save_desert(self, desert_position):
+    def save_desert(self):
         with open('src\Algorithms\desertPosition.json', 'w') as f:
-            json.dump({"pos" : desert_position}, f)         
+            json.dump({"pos" : self.desert_position}, f)         

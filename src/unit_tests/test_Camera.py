@@ -17,8 +17,8 @@ class CVTest(unittest.TestCase):
         cls.H = np.array([[ 3.98379589e-01, 8.28098023e-02, 5.48000000e+02], [-6.12605764e-03,-3.84345357e-01, 1.03000000e+02], [-6.28872633e-05, 2.09711523e-04, 1.00000000e+00]])
         
         cls.images = []
-        for file in os.listdir('src\\test\\images\\'):
-            cls.images.extend(['src\\test\\images\\' + file])
+        for file in os.listdir('src\\unit_tests\\images\\'):
+            cls.images.extend(['src\\unit_tests\\images\\' + file])
     
     @classmethod
     def tearDownClass(cls):
@@ -31,13 +31,13 @@ class CVTest(unittest.TestCase):
         pass
     
     def test_init(self):
-        camera = CameraRig(DCMotor(HAT_SETUP("motor_M1")), None)
+        camera = CameraRig(DCMotor(HAT_SETUP("motor1")), None)
         camera.K = self.K
         camera.D = self.D
         camera.H = self.H
         
     def test_pose(self):
-        camera = CameraRig(DCMotor(HAT_SETUP("motor_M1")), None)
+        camera = CameraRig(DCMotor(HAT_SETUP("motor1")), None)
         # camera.K = np.array([[1.0, 0.0, 0.0], [0.0, 1., 0.0], [0.0, 0.0, 1.0]])
         # camera.D = np.array([[0.0], [0.0], [0.0], [0.0]])
         camera.H = np.array([[ 1.0, 0.0, 0.0], [ 0.0, 1.0, 0.0], [ 0.0, 0.0, 1.0]])
@@ -48,13 +48,13 @@ class CVTest(unittest.TestCase):
 
         x_offset = 10.
         y_offset = 25.
-        camera2 = CameraRig(DCMotor(HAT_SETUP("motor_M1")), None, [x_offset, y_offset])
+        camera2 = CameraRig(DCMotor(HAT_SETUP("motor1")), None, [x_offset, y_offset])
         camera2.H = np.array([[ 1.0, 0.0, 0.0], [ 0.0, 1.0, 0.0], [ 0.0, 0.0, 1.0]])
         xy = camera2.convert_to_world_single(uv)
         self.assertEqual([uv[0] + x_offset, uv[1] + y_offset], xy)
     
     def test_pose_list(self):
-        camera = CameraRig(DCMotor(HAT_SETUP("motor_M1")), None)
+        camera = CameraRig(DCMotor(HAT_SETUP("motor1")), None)
         camera.H = np.array([[ 1.0, 0.0, 0.0], [ 0.0, 1.0, 0.0], [ 0.0, 0.0, 1.0]])
     
         uvs = [[0,0], [10, 10], [20., 25.]]
@@ -62,7 +62,7 @@ class CVTest(unittest.TestCase):
         self.assertListEqual(uvs, xys)
         
     def test_set_image(self):
-        camera = CameraRig(DCMotor(HAT_SETUP("motor_M1")), None)
+        camera = CameraRig(DCMotor(HAT_SETUP("motor1")), None)
         self.assertIs(camera.image, None)
         camera.load_image(self.images[0])
         # print(type(camera.image))
@@ -74,7 +74,7 @@ class CVTest(unittest.TestCase):
         self.assertFalse(np.array_equal(saved_image, camera.image))
         
     def test_analyze_board_numbers(self):
-        camera = CameraRig(DCMotor(HAT_SETUP("motor_M1")), None)
+        camera = CameraRig(DCMotor(HAT_SETUP("motor1")), None)
         camera.H = np.array([[ 1.0, 0.0, 0.0], [ 0.0, 1.0, 0.0], [ 0.0, 0.0, 1.0]])
         catan_board = StandardSetup()
         catan_board.desert_position = catan_board.empty_spaces[5].position # for testing
@@ -86,12 +86,12 @@ class CVTest(unittest.TestCase):
             self.assertEqual(len(numbers), 18)
             
     def test_analyze_board_pieces(self):
-        camera = CameraRig(DCMotor(HAT_SETUP("motor_M1")), None)
+        camera = CameraRig(DCMotor(HAT_SETUP("motor1")), None)
         camera.H = np.array([[ 1.0, 0.0, 0.0], [ 0.0, 1.0, 0.0], [ 0.0, 0.0, 1.0]])
         catan_board = StandardSetup()
         catan_board.desert_position = catan_board.empty_spaces[5].position # for testing
         
-        camera.load_image('src\\test\\images\\settlements1.jpeg')
+        camera.load_image('src\\unit_tests\\images\\settlements1.jpeg')
         colors = ['red', 'blue', 'white', 'orange']
         for color in colors:
             pieces = camera.analyze_board(catan_board, [Settlememt(color), City(color), Road(color)])
@@ -102,12 +102,12 @@ class CVTest(unittest.TestCase):
             # self.assertTrue(any(isinstance(piece, Road) for piece in pieces))
             
     def test_analyze_board_robber(self):
-        camera = CameraRig(DCMotor(HAT_SETUP("motor_M1")), None)
+        camera = CameraRig(DCMotor(HAT_SETUP("motor1")), None)
         camera.H = np.array([[ 1.0, 0.0, 0.0], [ 0.0, 1.0, 0.0], [ 0.0, 0.0, 1.0]])
         catan_board = StandardSetup()
         catan_board.desert_position = catan_board.empty_spaces[5].position # for testing
         
-        camera.load_image('src\\test\\images\\settlements1.jpeg')
+        camera.load_image('src\\unit_tests\\images\\settlements1.jpeg')
         robber = camera.analyze_board(catan_board, [Robber()])
         self.assertTrue(len(robber) != 0)
 

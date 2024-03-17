@@ -3,29 +3,29 @@ from catan_objects.BoardComponents import *
 from catan_objects.CatanBoard import CatanBoard
 
 class PumpAssembly():
-    def __init__(self, valve: DCMotor, intake: DCMotor, outtake: DCMotor = None):
+    def __init__(self, valve: Gate_Valve, suck_motor: DCMotor, blow_motor: DCMotor = None):
         self.valve = valve
-        self.intake = intake
-        self.outake = outtake
+        self.suck_motor = suck_motor
+        self.blow_motor = blow_motor
         
     def suction(self, throttle = 1.0, sleep = 0.0):
-        self.valve.low()
-        self.intake.start(throttle)
+        self.valve.high()
+        self.suck_motor.start(throttle)
         time.sleep(sleep)
     
     def release(self):
-        if self.intake.motor.throttle != 0:
-            self.intake.stop()
-        elif self.outake.motor.throttle != 0:
-            self.outake.stop()
+        if self.suck_motor.motor.throttle != 0:
+            self.suck_motor.stop()
+        elif self.blow_motor.motor.throttle != 0:
+            self.blow_motor.stop()
     
     def blow(self, throttle = 1.0, sleep = 0.0):
-        self.valve.high()
-        self.outake.start(throttle)   
+        self.valve.low()
+        self.blow_motor.start(throttle)   
         time.sleep(sleep)
         
 class Mount():
-    def __init__(self, z_motor: Stepper, right_pump_assemply: PumpAssembly, left_pump_assembly: PumpAssembly, max_height = 40, offset = 28,
+    def __init__(self, z_motor: Stepper, right_pump_assemply: PumpAssembly, left_pump_assembly: PumpAssembly, max_height = 42, offset = 28,
                  right_suction_type = 'cup', left_suction_type = 'universal'):
         self.z_motor = z_motor
         self.right_pump_assembly = right_pump_assemply
@@ -108,7 +108,7 @@ class Gantry():
         self.catan_board = catan_board
         self.tile_stacks = [TileStack(xy) for xy in tile_stack_positions]
         self.number_stacks = [TileStack(xy) for xy in number_stack_positions]
-        self.robber = [TileStack(robber_position, 33)] # When we place the robber we put it here
+        self.robber = TileStack(robber_position, 100) # When we place the robber we put it here
         
         self.red_bin = Bin(red_position)
         self.blue_bin = Bin(blue_position)
