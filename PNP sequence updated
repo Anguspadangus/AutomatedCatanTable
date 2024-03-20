@@ -69,13 +69,13 @@ def pick(gamepiece):
         move_z_axis(gamepiece)
         time.sleep(0.1)
     elif gamepiece in ["settlement", "city", "road", "robber"]:
-        set_gate_valve_blow_uni()
-        kit3.motor3.throttle = .75
+        set_gate_valve_blow_suctioncup()
+        kit3.motor1.throttle = .75
         time.sleep(1.5)
         move_z_axis(gamepiece)
-        kit3.motor3.throttle = 0
-        set_gate_valve_suck_uni()
-        kit3.motor4.throttle = 1.0
+        kit3.motor1.throttle = 0
+        set_gate_valve_suck_suctoioncup()
+        kit3.motor2.throttle = 1.0
         time.sleep(3)
     else:
         print("Invalid gamepiece type")
@@ -93,11 +93,11 @@ def place(gamepiece):
         kit3.motor1.throttle = 0
         hex_count += 1
     elif gamepiece in ["settlement", "city", "road", "robber"]:
-        kit3.motor4.throttle = 0
-        set_gate_valve_blow_uni()
-        kit3.motor3.throttle = 1.0
+        kit3.motor2.throttle = 0
+        set_gate_valve_blow_suctioncup()
+        kit3.motor1.throttle = 1.0
         time.sleep(2)
-        kit3.motor3.throttle = 0
+        kit3.motor1.throttle = 0
         
 # Function to move Z-axis to a specified position
 def move_z_axis(gamepiece):
@@ -181,9 +181,10 @@ def move_xy_axis(x_cord, y_cord):
         for i in range(max(target_steps_x, target_steps_y)):
             if i <= target_steps_x:
                 kit1.stepper1.onestep(direction=direction_1, style=stepper.DOUBLE)
+                time.sleep(0.001)
             if i <= target_steps_y:
                 kit1.stepper2.onestep(direction=direction_2, style=stepper.DOUBLE)
-            time.sleep(0.001)
+                time.sleep(0.001)
     except Exception as e:
         print(f"Error during motor movement: {e}")
         # Handle the error or exit the program
