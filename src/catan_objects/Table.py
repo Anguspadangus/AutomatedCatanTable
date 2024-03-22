@@ -2,7 +2,7 @@ from catan_objects.TableComponents import *
 from catan_objects.Gantry import Gantry
 
 class Table():
-    def __init__(self, gantry: Gantry, camera: CameraRig, lift: SingleDegreeComponent, cover: SingleDegreeComponent):
+    def __init__(self, gantry: Gantry, camera: CameraRig, lift: Lift, cover: SingleDegreeComponent):
         self.gantry = gantry
         self.camera = camera
         self.lift = lift

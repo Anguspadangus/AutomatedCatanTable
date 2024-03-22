@@ -21,7 +21,7 @@ class SingleDegreeComponent():
         self.motor.move_to(self.minimum_value)
 
 class Lift(SingleDegreeComponent):
-    def __init__(self, motor, maximum_value, minimum_value, solenoid_1: SingleDegreeComponent, solenoid_2: SingleDegreeComponent):
+    def __init__(self, motor: Stepper, maximum_value, minimum_value, solenoid_1: SingleDegreeComponent, solenoid_2: SingleDegreeComponent):
         super().__init__(motor, maximum_value, minimum_value)
         # self.lift = lift #if we make this a list we can have as many lead screws as we need
         self.solenoid_1 = solenoid_1

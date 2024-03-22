@@ -215,8 +215,8 @@ class DCMotor(Motor):
     def load(self, name):
         pass
     
-class LinkedMotor(Motor):
-    def __init__(self, motor_1, motor_2, linking_function):
+class LinkedMotor():
+    def __init__(self, motor_1: Motor, motor_2: Motor, linking_function):
         self.motor_1 = motor_1
         self.motor_2 = motor_2
         self.control_function = linking_function
