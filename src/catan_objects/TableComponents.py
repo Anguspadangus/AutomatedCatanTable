@@ -21,7 +21,7 @@ class SingleDegreeComponent():
         self.motor.move_to(self.minimum_value)
 
 class Lift(SingleDegreeComponent):
-    def __init__(self, motor: Stepper, maximum_value, minimum_value, solenoid_1: SingleDegreeComponent, solenoid_2: SingleDegreeComponent):
+    def __init__(self, motor: Stepper, maximum_value, minimum_value, solenoid_1: DCMotor, solenoid_2: DCMotor):
         super().__init__(motor, maximum_value, minimum_value)
         # self.lift = lift #if we make this a list we can have as many lead screws as we need
         self.solenoid_1 = solenoid_1
@@ -29,12 +29,12 @@ class Lift(SingleDegreeComponent):
 
     def set_high_position(self):
         self.motor.move_to(self.maximum_value)
-        self.solenoid_1.set_low_position()
-        self.solenoid_2.set_low_position()
+        self.solenoid_1.stop()
+        self.solenoid_2.stop()
         
     def set_low_position(self):
-        self.solenoid_1.set_high_position()
-        self.solenoid_2.set_high_position()
+        self.solenoid_1.start(1)
+        self.solenoid_2.start(1)
         self.motor.move_to(self.minimum_value)
 """
 K and D are found using cv2.camera_calibration, see fisheyeCalibration Scripts
