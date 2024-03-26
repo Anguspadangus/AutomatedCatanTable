@@ -46,7 +46,7 @@ h, status = cv2.findHomography(xy, uv)
 see https://colab.research.google.com/drive/1rSl_eMrMY3c0pPDfQxWlSY97dhvtqyMP#scrollTo=VxaYMfC-n9wo
 """
 class CameraRig():
-    def __init__(self, camera : DCMotor, light: DCMotor, position = [0,0]):
+    def __init__(self, camera : CameraModule, light: Lights, position = [0,0]):
         self.camera = camera
         self.light = light
         self.pose = position
@@ -56,15 +56,16 @@ class CameraRig():
         self.image = None
         
     def take_picture(self):
-        # TODO owen
         # turn light on
-        # self.light.start(1)
+        self.light.start()
         # take picture
+        self.camera.take_picture()
         # turn off light
-        # self.light.stop()
-        # self.image = undistort_picture(picture)
-        pass
-    
+        self.light.stop()
+        # Load and undistort picture
+        self.load_image('/home/pi/Desktop/cam/Catable_Image.jpg')
+        self.undistort_picture()
+        
     def undistort_picture(self):
         # Can use Knew to change scale so it fits
         self.image = cv2.fisheye.undistortImage(self.image, self.K, D=self.D)

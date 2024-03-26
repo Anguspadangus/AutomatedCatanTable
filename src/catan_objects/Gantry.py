@@ -39,14 +39,14 @@ class Mount():
     def return_to_even(self):
         return_value = 0.0
         if isinstance(self.current_suckable, Robber):
-            return_value += self.maxium_height + 10.
+            return_value += 10.
         elif isinstance(self.current_suckable, Tile):
-            return_value += self.maxium_height + 3.
+            return_value += 10.
         elif isinstance(self.current_suckable, Piece):
-            return_value += self.maxium_height + 5.
+            return_value += 5.
         
         if self.current_suckable != None:    
-            return_value = -1 * self.convert_z(self.current_suckable, return_value)
+            return_value = self.convert_z(self.current_suckable, return_value)
         
         self.z_motor.move_to(return_value)
     
@@ -150,11 +150,11 @@ class Gantry():
             # Can check if there is no valid containers, but I want to error out anyway    
             valid_container.push(self.mount.current_suckable)
             self.move_to(self.mount.current_suckable)
-            self.mount.place(self.mount.current_suckable, valid_container.stack_height) # + object.height) we want to place right above the stack so adding it first should be ideal
+            self.mount.place(self.mount.current_suckable, valid_container.dropoff_height) # + object.height) we want to place right above the stack so adding it first should be ideal
         elif isinstance(where_to_place, Container):
             where_to_place.push(self.mount.current_suckable)
             self.move_to(self.mount.current_suckable)
-            self.mount.place(self.mount.current_suckable, where_to_place.stack_height)
+            self.mount.place(self.mount.current_suckable, where_to_place.dropoff_height)
         else:
             self.move_to(where_to_place)
             self.mount.place(self.mount.current_suckable, where_to_place.height) # man this is definity cheating and will lead to so many bugs but I love it, its hard to do things in python without the languge being strongly typed

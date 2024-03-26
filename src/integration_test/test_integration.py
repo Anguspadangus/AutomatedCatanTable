@@ -9,7 +9,7 @@ mount = Mount(Stepper(200, 40, HAT_SETUP('stepper1', 0x61), HAT_CONTROL), pump_2
 catan_board = Setup((350,50))
 gantry = Gantry(LinkedMotor(Stepper(200, 40, HAT_SETUP('stepper1')),
                 Stepper(200, 40, HAT_SETUP('stepper2')), LINKED_HAT_CONTROL),
-                mount, catan_board, [[0,100], [0,200], [0,300]], [[10,10], [20,10], [30,10]], [10,20],
+                mount, catan_board, [[0,100]], [[10,10], [20,10], [30,10]], [10,20],
                 [10, 30], [10, 40], [10, 50], [10,60])
 
 #gantry.move_to_xy([-350, -50])
@@ -24,12 +24,19 @@ gantry.place(tile_stack)
 gantry.move_to_home()
 """
 
-for hexagon in gantry.catan_board.empty_spaces:
-    gantry.pick_up(hexagon)
-    gantry.place(gantry.tile_stacks)
+city = City('red', [300,200])
+p = Tile(3, 19, [300,100])
+gantry.pick_up(p)
+gantry.place(gantry.red_bin)
+gantry.pick_up(city)
+gantry.place(gantry.red_bin)
+
+# for hexagon in gantry.catan_board.empty_spaces:
+#     gantry.pick_up(hexagon)
+#     gantry.place(gantry.tile_stacks)
     
-for hexagon in reversed(gantry.catan_board.empty_spaces):
-    gantry.pick_up(gantry.tile_stacks)
-    gantry.place(hexagon)
+# for hexagon in reversed(gantry.catan_board.empty_spaces):
+#     gantry.pick_up(gantry.tile_stacks)
+#     gantry.place(hexagon)
 
 gantry.move_to_home()

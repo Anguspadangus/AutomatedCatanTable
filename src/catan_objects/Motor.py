@@ -51,10 +51,29 @@ if os.name == 'nt':
         
     def gpio_cleanup():
         pass
+    
+    class Picamera2():
+        def __init__(self):
+            pass
+        def capture_file(self, path):
+            pass
+        
+    class neopixel():
+        def __init__(self):
+            pass
+        
+        class NeoPixel():
+            def __init__(self, pin, number, brightness):
+                pass
+            def fill(color):
+                pass
+            
 else:
     import RPi.GPIO as GPIO
     from adafruit_motorkit import MotorKit
     from adafruit_motor import stepper
+    from picamera2 import Picamera2
+    import neopixel
     
 def GPIO_SETUP(*args):
     GPIO.setmode(GPIO.BCM)
@@ -223,7 +242,7 @@ class LinkedMotor():
         
     def move_to(self, value : list):
         steps_1 = self.motor_1.position_to_steps(value[0])
-        steps_2 = self.motor_1.position_to_steps(value[1])
+        steps_2 = self.motor_2.position_to_steps(value[1])
         
         self.control_function(self.motor_1.motor, self.motor_2.motor, steps_1, steps_2)
         
@@ -237,3 +256,20 @@ class LinkedMotor():
     def load(self, name_1, name_2):
         self.motor_1.load(name_1)
         self.motor_2.load(name_2)
+        
+class Lights():
+    def __init__(self, pin, number = 32, brightness = 1):
+        self.pixels = neopixel.NeoPixel(pin, number, brightness=brightness) # neopixel.NeoPixel(board.D10, 32, brightness=1)
+        
+    def start(self):
+        self.pixels.fill((255, 255, 255))
+        
+    def stop(self):
+        self.pixels.fill((0,0,0))
+        
+class CameraModule(): # Hopefully don't run into a name clashes, we also don't need this; its just a wrapper for now
+    def __init__(self):
+        self.camera = Picamera2()
+    
+    def take_picture(self, path = '/home/pi/Desktop/cam/Catable_Image.jpg'):
+        self.camera.capture_file(path)
