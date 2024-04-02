@@ -50,8 +50,8 @@ class CameraRig():
         self.camera = camera
         self.light = light
         self.pose = position
-        self.K = np.array([[113.49354735654141, 0.0, 371.5786534104595], [0.0, 116.6060998517777, 205.3861581256824], [0.0, 0.0, 1.0]])
-        self.D = np.array([[0.12694667308062602], [0.6454345033192549], [-0.5465056949757663], [0.25172851391836865]])
+        self.K = np.array([[108.49354735654141, 0.0, 371.5786534104595], [0.0, 111.6060998517777, 205.3861581256824], [0.0, 0.0, 1.0]])
+        self.D = np.array([[-1.1e-02], [ 8.0e-05], [ 3e-03], [-1.7e-03]], dtype=np.float64)
         self.H = np.array([[ 3.98379589e-01, 8.28098023e-02, 5.48000000e+02], [-6.12605764e-03,-3.84345357e-01, 1.03000000e+02], [-6.28872633e-05, 2.09711523e-04, 1.00000000e+00]])
         self.image = None
         
@@ -68,7 +68,10 @@ class CameraRig():
         
     def undistort_picture(self):
         # Can use Knew to change scale so it fits
-        self.image = cv2.fisheye.undistortImage(self.image, self.K, D=self.D)
+        Knew = self.K.copy()
+        Knew[(0,1), (0,1)] = 0.85 * Knew[(0,1), (0,1)]
+        self.image = cv2.undistort(self.image, cameraMatrix=self.K, distCoeffs=self.D, newCameraMatrix=Knew)
+        # self.image = cv2.fisheye.undistortImage(self.image, self.K, D=self.D)
 
     def convert_to_world(self, positions_camera_space):
         positions_world_space = []
@@ -286,7 +289,13 @@ class CameraRig():
             result_image = cv2.circle(result_image, (pos[0], pos[1]), 150, (0,0,0), -1)
             
         return result_image
-
+    
+    def show_image(self):    
+        cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+        cv2.imshow('output', self.image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        
     def display_on_image(self, cords):
         for cord in cords:
             pos = [int(cord.position[0]), int(cord.position[1])]

@@ -28,16 +28,16 @@ import cv2
 import numpy as np
 import os
 import glob
-CHECKERBOARD = (7,7)
+CHECKERBOARD = (8,14)
 subpix_criteria = (cv2.TERM_CRITERIA_EPS+cv2.TERM_CRITERIA_MAX_ITER, 30, 0.1)
-calibration_flags = cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC+cv2.fisheye.CALIB_CHECK_COND+cv2.fisheye.CALIB_FIX_SKEW
+calibration_flags = cv2.fisheye.CALIB_RECOMPUTE_EXTRINSIC+cv2.fisheye.CALIB_FIX_SKEW
 objp = np.zeros((1, CHECKERBOARD[0]*CHECKERBOARD[1], 3), np.float32)
 objp[0,:,:2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2)
 _img_shape = None
 objpoints = [] # 3d point in real world space
 imgpoints = [] # 2d points in image plane.
-fname = glob.glob('src\\test\\calibration_images\\RealTest.jpg')
-img = cv2.imread(fname[0])
+fname = 'integration_test\\images\\IT_3.jpg'
+img = cv2.imread(fname)
 if _img_shape == None:
     _img_shape = img.shape[:2]
 else:
