@@ -3,6 +3,8 @@ import cv2 as cv
 import glob
 
 
+# SOURCED FROM
+# https://github.com/niconielsen32/ComputerVision/blob/master/cameraCalibration.py
 
 ################ FIND CHESSBOARD CORNERS - OBJECT POINTS AND IMAGE POINTS #############################
 
