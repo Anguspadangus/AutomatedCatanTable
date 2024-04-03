@@ -6,10 +6,18 @@ import cv2
 camera = CameraModule()
 lights = Lights(1)
 cam = CameraRig(camera, lights, position=[0,0])
-cam.load_image('integration_test\\images\\IT_2.jpg')
+cam.load_image('integration_test\\images\\homo00.jpg')
 cam.undistort_picture()
 
-xy = [[0,0], [250,50], [200,350], [50,350]]
+xy = []
+for i in range(int(200/50)):
+    for j in range(int(400/50)):
+        if i == 100 and j == 350:
+            continue
+        elif i == 150 and j == 350:
+            continue
+        else:
+            xy.append([i*50, j*50])
 uv = []
 
 def on_mouse_click(event, x, y, flags, param):

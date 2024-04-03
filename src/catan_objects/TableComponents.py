@@ -50,9 +50,11 @@ class CameraRig():
         self.camera = camera
         self.light = light
         self.pose = position
-        self.K = np.array([[108.49354735654141, 0.0, 371.5786534104595], [0.0, 111.6060998517777, 205.3861581256824], [0.0, 0.0, 1.0]])
-        self.D = np.array([[-1.1e-02], [ 8.0e-05], [ 3e-03], [-1.7e-03]], dtype=np.float64)
-        self.H = np.array([[ 3.98379589e-01, 8.28098023e-02, 5.48000000e+02], [-6.12605764e-03,-3.84345357e-01, 1.03000000e+02], [-6.28872633e-05, 2.09711523e-04, 1.00000000e+00]])
+        self.K = np.array([[324.76825238, 0. ,373.66404696], [0., 326.72841161, 247.07466765], [0., 0., 1., ]])
+        self.D = np.array([[-0.31685422,  0.11733933, -0.00043777,  0.00120568, -0.02182481]])
+        self.H = np.array([[ 3.23294418e-02,  1.04514690e+00,  2.11150059e+02],
+                            [-1.08122336e+00, -8.08570748e-03,  2.14263633e+02],
+                            [ 4.84285359e-05, -5.77222961e-05,  1.00000000e+00]])
         self.image = None
         
     def take_picture(self):
@@ -68,10 +70,9 @@ class CameraRig():
         
     def undistort_picture(self):
         # Can use Knew to change scale so it fits
-        Knew = self.K.copy()
-        Knew[(0,1), (0,1)] = 0.85 * Knew[(0,1), (0,1)]
-        self.image = cv2.undistort(self.image, cameraMatrix=self.K, distCoeffs=self.D, newCameraMatrix=Knew)
-        # self.image = cv2.fisheye.undistortImage(self.image, self.K, D=self.D)
+        h, w = self.image.shape[:2]
+        new_camera_matrix, _ = cv2.getOptimalNewCameraMatrix(self.K, self.D, (w,h), 0, (w,h))
+        self.image = cv2.undistort(self.image, cameraMatrix=self.K, distCoeffs=self.D, newCameraMatrix=new_camera_matrix)
 
     def convert_to_world(self, positions_camera_space):
         positions_world_space = []
