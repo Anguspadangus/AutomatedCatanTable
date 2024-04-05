@@ -115,11 +115,11 @@ class CatanBoard():
                 return tile
     
     def load_desert(self):
-        f = open('src\Algorithms\desertPosition.json')
+        f = open('desertPosition.json')
         data = json.load(f)
         f.close()
         return tuple(data["pos"])
 
     def save_desert(self):
-        with open('src\Algorithms\desertPosition.json', 'w') as f:
+        with open('desertPosition.json', 'w') as f:
             json.dump({"pos" : self.desert_position}, f)         

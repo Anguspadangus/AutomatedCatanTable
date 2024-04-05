@@ -33,7 +33,7 @@ class Road(Piece):
         
 class City(Piece):
     def __init__(self, color, xy = [0,0]):
-        super().__init__(19, color, [15000,22000], xy)
+        super().__init__(7, color, [15000,22000], xy)
         
 class Settlememt(Piece):
     def __init__(self, color, xy = [0,0]):
@@ -83,7 +83,7 @@ class Container(abc.ABC):
 
 # Stack of tiles to be manipulated with 
 class TileStack(Container):
-    def __init__(self, position, max_height = 30, dropoff_height = 30):
+    def __init__(self, position, max_height = 20, dropoff_height = 32):
         super().__init__(position, max_height, dropoff_height)
         
     def push(self, tile):
@@ -142,7 +142,7 @@ class EmptyHex(TileStack):
             if neighbor == '0':
                 self.neighbor_count += 1
                 
-        self.stack_height -= 2
+        self.stack_height -= -0
         
     def __eq__(self, other):
         return self.name == other.name
