@@ -11,7 +11,7 @@ class Table():
         
     def run(self):
         # drop lift
-        self.lift
+        #self.lift.set_low_position()
         # close cover
         # self.cover.set_high_position()
         

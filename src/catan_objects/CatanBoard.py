@@ -104,5 +104,5 @@ class CatanBoard():
     
     def get_desert_hex(self):
         for tile in self.empty_spaces:
-            if tile.stack[-1].is_desert:
+            if tile.stack[0].is_desert:
                 return tile     
