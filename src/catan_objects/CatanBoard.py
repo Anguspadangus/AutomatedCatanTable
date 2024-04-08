@@ -90,7 +90,7 @@ class CatanBoard():
     
     # Algorithym for choosing where to place a tile
     def select_empty_tile_with_neighbors(self, empty_spaces):
-        empty_available_hexes = list(filter(lambda space : space.neighbor_count >= 2, empty_spaces))
+        empty_available_hexes = list(filter(lambda space : space.neighbor_count >= 3, empty_spaces))
         random_available_hex = random.choice(empty_available_hexes)
         return random_available_hex
     
