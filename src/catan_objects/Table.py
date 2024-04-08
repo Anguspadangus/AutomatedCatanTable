@@ -1,5 +1,6 @@
 from catan_objects.TableComponents import *
 from catan_objects.Gantry import Gantry
+from integration_test.integration_setup import Setup
 
 class Table():
     def __init__(self, gantry: Gantry, camera: CameraRig, lift: Lift, cover: SingleDegreeComponent):
@@ -10,8 +11,15 @@ class Table():
         
     def run(self):
         # drop lift
+        self.lift
         # close cover
+        # self.cover.set_high_position()
+        
         # take picture
+        # self.camera.take_picture()
+        
+        # Determine where Robber is
+        self.find_desert()
         
         # Add numbers and robber to stack
         self.reveal(Number(10))
@@ -34,18 +42,26 @@ class Table():
         # open cover
         # raise lift
     
+    def find_desert(self):
+        A_pos = [345,105]
+        catan_board_camera = Setup(A_pos)
+
+        self.camera.find_desert(catan_board_camera, self.gantry.catan_board, (40,50))
+    
     def reveal(self, to_reveal):
-        objs = self.camera.analyze_board(self.gantry.catan_board, to_reveal)
-        self.gantry.catan_board.add_to_board(objs)
+        objs = self.camera.analyze_board(to_reveal)
+        self.gantry.catan_board.add_to_board_lazy(objs)
     
     def remove_robber(self):
         robber_hexes = self.gantry.catan_board.get_robber()
+        self.gantry.mount.z_motor.move_to(-5)
+        
         for hexagon in robber_hexes:
             self.gantry.pick_up(hexagon)
             self.gantry.place(self.gantry.robber)
                 
     def remove_pieces_by_color(self, color):
-        pieces = self.camera.analyze_board(self.gantry.catan_board, [Road(color), Settlememt(color), City(color)])
+        pieces = self.camera.analyze_board([Road(color), Settlement(color), City(color)])
         for piece in pieces:
             self.gantry.pick_up(piece)
             if color == 'red':
@@ -88,6 +104,7 @@ class Table():
             self.gantry.place(number)
             
     def place_robber(self):
-        while len(self.gantry.robber.stack) != 0:     
-            self.gantry.pick_up(self.gantry.robber)
-            self.gantry.place(self.gantry.catan_board.get_desert_hex())
+        self.gantry.mount.z_motor.move_to(-5)
+        
+        self.gantry.pick_up(self.gantry.robber)
+        self.gantry.place(self.gantry.catan_board.get_desert_hex())

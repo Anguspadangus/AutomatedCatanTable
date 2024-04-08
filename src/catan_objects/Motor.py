@@ -114,7 +114,8 @@ def HAT_SETUP(type, address = 0x60):
         
     return motor
 
-def HAT_CONTROL(motor, steps):
+def HAT_CONTROL(motor, steps, delay = 0.001):
+    print(delay)
     if steps > 0:
         direction = stepper.FORWARD
     else:
@@ -124,7 +125,7 @@ def HAT_CONTROL(motor, steps):
     
     for i in range(steps):
         motor.onestep(direction=direction, style=stepper.DOUBLE)
-        time.sleep(0.001)
+        time.sleep(delay)
 
 def LINKED_HAT_CONTROL(motor_1, motor_2, steps_1, steps_2):
     if steps_1 > 0:
@@ -157,14 +158,6 @@ class Motor(ABC):
     
     def __init__(self, setup):
         self.motor = setup
-        
-    @abstractmethod
-    def save(self, name):
-        pass
-    
-    @abstractmethod
-    def load(self, name):
-        pass
 
 class Stepper(Motor):
     # The translator is the attachment to the motor, example a timing pully has 20 teeth per rotation
@@ -186,16 +179,6 @@ class Stepper(Motor):
     def position_to_steps(self, coordinate):
         return (coordinate - self.current_cartisan) / self.distance_per_step # steps
     
-    def save(self, name):
-        with open('src\Algorithms\desertPosition.json', 'w') as f:
-            json.dump({f"{name}" :self.current_cartisan}, f) 
-            
-    def load(self, name):
-        f = open('src\Algorithms\desertPosition.json')
-        data = json.load(f)
-        f.close()
-        self.current_cartisan = data[f"{name}"]
-    
     def _set_current_cartisan(self, value):
         self.current_cartisan = value
         
@@ -210,12 +193,6 @@ class Gate_Valve(Motor):
         
     def low(self):
         self.control_function(self.pin, GPIO.LOW)
-
-    def save(self, name):
-        pass
-
-    def load(self, name):
-        pass
         
 class DCMotor(Motor):
     def __init__(self, setup_function):
@@ -226,13 +203,6 @@ class DCMotor(Motor):
     
     def stop(self):
         self.motor.throttle = 0
-    
-    # If there is a need to save and load these motors, we'll do it
-    def save(self, name):
-        pass
-    
-    def load(self, name):
-        pass
     
 class LinkedMotor():
     def __init__(self, motor_1: Motor, motor_2: Motor, linking_function):
@@ -249,14 +219,6 @@ class LinkedMotor():
         self.motor_1._set_current_cartisan(value[0])
         self.motor_2._set_current_cartisan(value[1])
         
-    def save(self, name_1, name_2):
-        self.motor_1.save(name_1)
-        self.motor_2.save(name_2)
-        
-    def load(self, name_1, name_2):
-        self.motor_1.load(name_1)
-        self.motor_2.load(name_2)
-        
 class Lights():
     def __init__(self, pin, number = 32, brightness = 1):
         self.pixels = neopixel.NeoPixel(pin, number, brightness=brightness) # neopixel.NeoPixel(board.D10, 32, brightness=1)
@@ -270,6 +232,8 @@ class Lights():
 class CameraModule(): # Hopefully don't run into a name clashes, we also don't need this; its just a wrapper for now
     def __init__(self):
         self.camera = Picamera2()
+        self.camera.start()
+        time.sleep(0.5)
     
     def take_picture(self, path = '/home/pi/Desktop/cam/Catable_Image.jpg'):
         self.camera.capture_file(path)

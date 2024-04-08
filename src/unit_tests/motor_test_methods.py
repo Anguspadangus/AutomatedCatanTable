@@ -75,7 +75,7 @@ def HAT_SETUP(type, address = 0x60):
         
     return motor
 
-def HAT_CONTROL(motor, steps):
+def HAT_CONTROL(motor, steps, delay=0.001):
     if steps > 0:
         direction = stepper.FORWARD
     else:

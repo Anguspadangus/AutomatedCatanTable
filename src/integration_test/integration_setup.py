@@ -54,7 +54,25 @@ def Setup(A_pos):
     S_pos = (O_pos[0], 2 * short_hex_radius + O_pos[1])
     
     configuration = [
-        [['A', A_pos, A_neighbors, long_hex_Radius], Hex('A', long_hex_Radius)]
+        [['A', A_pos, A_neighbors, long_hex_Radius], Hex('A', long_hex_Radius)],
+        [['B', B_pos, B_neighbors, long_hex_Radius], Hex('B', long_hex_Radius)],
+        [['C', C_pos, C_neighbors, long_hex_Radius], Hex('C', long_hex_Radius)],
+        [['D', D_pos, D_neighbors, long_hex_Radius], Hex('D', long_hex_Radius)],
+        [['E', E_pos, E_neighbors, long_hex_Radius], Hex('E', long_hex_Radius)],
+        [['F', F_pos, F_neighbors, long_hex_Radius], Hex('F', long_hex_Radius)],
+        [['G', G_pos, G_neighbors, long_hex_Radius], Hex('G', long_hex_Radius)],
+        [['H', H_pos, H_neighbors, long_hex_Radius], Hex('H', long_hex_Radius)],
+        [['I', I_pos, I_neighbors, long_hex_Radius], Hex('I', long_hex_Radius)],
+        [['J', J_pos, J_neighbors, long_hex_Radius], Hex('J', long_hex_Radius)],
+        [['K', K_pos, K_neighbors, long_hex_Radius], Hex('K', long_hex_Radius)],
+        [['L', L_pos, L_neighbors, long_hex_Radius], Hex('L', long_hex_Radius)],
+        [['M', M_pos, M_neighbors, long_hex_Radius], Hex('M', long_hex_Radius)],
+        [['N', N_pos, N_neighbors, long_hex_Radius], Hex('N', long_hex_Radius)],
+        [['O', O_pos, O_neighbors, long_hex_Radius], Hex('O', long_hex_Radius)],
+        [['P', P_pos, P_neighbors, long_hex_Radius], Hex('P', long_hex_Radius)],
+        [['Q', Q_pos, Q_neighbors, long_hex_Radius], Hex('Q', long_hex_Radius)],
+        [['R', R_pos, R_neighbors, long_hex_Radius], Hex('R', long_hex_Radius)],
+        [['S', S_pos, S_neighbors, long_hex_Radius], Hex('S', long_hex_Radius)]
         ]
     
     return CatanBoard(configuration)

@@ -85,6 +85,10 @@ class CVTest(unittest.TestCase):
         stepper1.move_to(10)
         self.assertEqual(stepper1.current_cartisan, 10.0)
         
+    def test_delay(self):
+        stepper1 = Stepper(200, 8, HAT_SETUP('stepper1'), HAT_CONTROL, 0.5)
+        stepper1.move_to(10)
+        
     # Can test the rest of them, but they will change with actual motor stuff
         
 if __name__ == '__main__':

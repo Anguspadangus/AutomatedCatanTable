@@ -11,33 +11,34 @@ class Suckable():
         self.position = position
         
 class Piece(Suckable):
-    # Class static, defines range for colors
-    __color_dictionary = {'grey' : [(110,50,60), (125,100,120)],
-                        'blue' : [(100, 150, 100), (120, 255, 255)],
-                        'red' : [(170, 190, 50), (180, 255, 125)],
-                        'orange' : [(10, 150, 100), (20, 255, 255)],
-                        'white': [(100,30,200), (150,60,255)]}
+    # Class static, defines range for colors, #Note red uses a green light
+    __color_dictionary = {'grey' : [(120, 125, 105), (135 , 185, 190)],
+                        'blue' : [(87, 156, 0), (120 , 255, 210)],
+                        'red' : [(162, 199, 153), (179 , 255, 239)],
+                        'orange' : [(166, 204, 159), (179 , 255, 242)],
+                        'white': [(130, 81, 147), (148 , 130, 235)]}
     
-    def __init__(self, height, color, area, xy = [0,0]):
+    def __init__(self, height, color, area, edges, xy = [0,0]):
         self.color = Piece.__color_dictionary[color]
         self.area = area
+        self.edges = edges
         super().__init__(height, 'universal', xy)
         
 class Robber(Piece):
     def __init__(self, xy = [0,0]):
-        super().__init__(32, 'grey', [20000,30000], xy)
+        super().__init__(32, 'grey', [120,290], [3,6], xy)
         
 class Road(Piece):
     def __init__(self, color, xy = [0,0]):
-        super().__init__(5, color, [4000,7000], xy)
+        super().__init__(5, color, [30,105], [2,4], xy)
         
 class City(Piece):
     def __init__(self, color, xy = [0,0]):
-        super().__init__(7, color, [15000,22000], xy)
+        super().__init__(7, color, [150,300], [4,7], xy)
         
-class Settlememt(Piece):
+class Settlement(Piece):
     def __init__(self, color, xy = [0,0]):
-        super().__init__(12, color, [7000,15000], xy)
+        super().__init__(12, color, [80,150], [3,6], xy)
         
 """----------------------------------------------------"""
 

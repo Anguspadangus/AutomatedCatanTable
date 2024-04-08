@@ -2,7 +2,6 @@ from catan_objects.BoardComponents import *
 
 import random
 import copy
-import json
 import math
 import numpy as np
 
@@ -11,24 +10,18 @@ class CatanBoard():
         # The possible spaces on the catan board
         self.empty_spaces = [EmptyHex(config[0][0], config[0][2], config[0][1], config[0][3]) for config in configuration]
         
-        # Position of the desert tile
-        self.desert_position = self.load_desert()
-        
         for i, resource in enumerate(configuration):
-            if self.empty_spaces[i].position == self.desert_position:
-                resource[1].is_desert = True
-                
             self.empty_spaces[i].push(resource[1])
  
-    def add_numbers(self, numbers):
-        # The lazy way
+    def add_to_board_lazy(self, to_add):
+        # The lazy way but safe
         i = 0
-        for number in numbers:
+        for obj in to_add:
             if not self.empty_spaces[i].stack[0].is_desert:
-                self.empty_spaces[i].reveal(number)
+                self.empty_spaces[i].reveal(obj)
                 i += 1
             else:
-                self.empty_spaces[i+1].reveal(number)
+                self.empty_spaces[i+1].reveal(obj)
                 i += 2
                 
     def add_to_board(self, to_add):
@@ -81,7 +74,7 @@ class CatanBoard():
     def place_numbers(self):
         place_order = []
         # This should be a clean shallow copy (ref)
-        copy_empty_spaces = [space for space in self.empty_spaces if space.position != self.desert_position]
+        copy_empty_spaces = [space for space in self.empty_spaces if not space.stack[0].is_desert]
         
         while len(copy_empty_spaces) != 0:
             available_hex = self.select_empty_tile(copy_empty_spaces)
@@ -111,15 +104,5 @@ class CatanBoard():
     
     def get_desert_hex(self):
         for tile in self.empty_spaces:
-            if tile.position == self.desert_position:
-                return tile
-    
-    def load_desert(self):
-        f = open('desertPosition.json')
-        data = json.load(f)
-        f.close()
-        return tuple(data["pos"])
-
-    def save_desert(self):
-        with open('desertPosition.json', 'w') as f:
-            json.dump({"pos" : self.desert_position}, f)         
+            if tile.stack[-1].is_desert:
+                return tile     
