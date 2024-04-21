@@ -1,6 +1,6 @@
-from tile import *
-from Board import Board
-from BoardVisualizer import BoardVisualizer
+from visualization.tile import *
+from visualization.CatanBoard import CatanBoard
+from visualization.BoardVisualizer import BoardVisualizer
 
 import math
 
@@ -76,7 +76,7 @@ def main():
         [['S', S_pos, S_neighbors], Hex(hexRadius, 'ore'), Number(12, circleRadius)]
     ]
 
-    B = Board(configuration, hexRadius)
+    B = CatanBoard(configuration, hexRadius)
     BV = BoardVisualizer(B)
     BV.Run()
     

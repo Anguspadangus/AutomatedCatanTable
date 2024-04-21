@@ -3,32 +3,32 @@ from matplotlib.animation import FuncAnimation
 import copy
 
 class BoardVisualizer():
-    def __init__(self, board):
+    def __init__(self, catan_board):
         # initalizing figure
         self.m_fig, self.m_ax = plt.subplots()
         self.m_ax.set_xlim(-10,20)
         self.m_ax.set_ylim(-10,20)
         
         # The inital setup of the board, from the board's constructor
-        self.m_initalConfigurationHexes = copy.deepcopy(board.m_resources)
-        self.m_initalConfigurationNumbers = copy.deepcopy(board.m_numbers)
+        self.m_initalConfigurationHexes = copy.deepcopy(catan_board.m_resources)
+        self.m_initalConfigurationNumbers = copy.deepcopy(catan_board.m_numbers)
         self.m_totalFrames = len(self.m_initalConfigurationHexes)
         
-        # The stakcs of numbers and hexes after removing them from the board
-        board.ClearBoard()
-        self.m_removalSequenceHexes = copy.deepcopy(board.m_resourceDeque)
-        self.m_removalSequenceNumbers = copy.deepcopy(board.m_numberDeque)
+        # The stakcs of numbers and hexes after removing them from the catan_board
+        catan_board.ClearBoard()
+        self.m_removalSequenceHexes = copy.deepcopy(catan_board.m_resourceDeque)
+        self.m_removalSequenceNumbers = copy.deepcopy(catan_board.m_numberDeque)
         
         # The place sequence of the board, the removal sequences differ by the position of the placements
-        board.PlaceBoard()
-        self.m_placeSequenceHexes = copy.deepcopy(board.m_newBoardConfigurationResources)
-        self.m_placeSequenceNumbers = copy.deepcopy(board.m_newBoardConfigurationNumbers)
+        catan_board.PlaceBoard()
+        self.m_placeSequenceHexes = copy.deepcopy(catan_board.m_newBoardConfigurationResources)
+        self.m_placeSequenceNumbers = copy.deepcopy(catan_board.m_newBoardConfigurationNumbers)
     
     # Initial setup for the board
     def Init(self):
         # Python doesn't offer a stack or queue in the std so have to use somehting like this
-        for hex in reversed(self.m_removalSequenceHexes):
-            self.m_ax.add_patch(hex.m_shape)
+        for hexagon in reversed(self.m_removalSequenceHexes):
+            self.m_ax.add_patch(hexagon.m_shape)
 
         for number in reversed(self.m_removalSequenceNumbers):     
             self.m_ax.add_patch(number.m_shape)

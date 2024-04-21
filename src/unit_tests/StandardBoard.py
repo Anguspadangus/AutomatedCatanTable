@@ -1,5 +1,5 @@
-from objects.tile import *
-from objects.Board import Board
+from catan_objects.BoardComponents import *
+from catan_objects.CatanBoard import CatanBoard
 import math
 
 """
@@ -8,8 +8,7 @@ Defines the standard setup of a catan game, useful for tests and the final produ
 
 def StandardSetup():
     # The size of each resource hex and number tile
-    hexRadius = 3.5 / 2 # inches
-    circleRadius = 0.492126 # inches
+    hexRadius = 350 # mm
 
     # The neighbors of each empty hex
     A_neighbors = ['E', 'B', '0','0', '0', 'D']
@@ -32,8 +31,11 @@ def StandardSetup():
     R_neighbors = ['0', 'S', 'O','N', 'Q', '0']
     S_neighbors = ['0', '0', 'P','O', 'R', '0']
 
+    scaler = (1, 1)
+    offset = (900, 1100)
+    
     # The position of each possible catan board, determined by the hexes radius
-    A_pos = (0,0)
+    A_pos = (0, 0)
     B_pos = (math.sqrt(3) * hexRadius + A_pos[0], A_pos[1])
     C_pos = (math.sqrt(3) * hexRadius + B_pos[0], B_pos[1])
     D_pos = (-math.sqrt(3)/2 * hexRadius + A_pos[0], 3/2 * hexRadius + A_pos[1])
@@ -53,29 +55,33 @@ def StandardSetup():
     R_pos = (math.sqrt(3) * hexRadius + Q_pos[0], Q_pos[1])
     S_pos = (math.sqrt(3) * hexRadius + R_pos[0], R_pos[1])
 
-    # Configuration of the board
-    # [[name, position, neighbors], Hex(radius, resource), Number(value, radius)]
-    # The position of each Hex gets updated by the empty hex it is in the same row as
+    positions = [A_pos, B_pos, C_pos, D_pos, E_pos, F_pos, G_pos, H_pos, I_pos, J_pos, K_pos, L_pos, M_pos, N_pos, O_pos, P_pos, Q_pos, R_pos, S_pos]
+    for i in range(len(positions)):
+        positions[i] = (int(positions[i][0]*scaler[0]+offset[0]), int(positions[i][1]*scaler[1]+offset[1]))
+    
     configuration = [
-        [['A', A_pos, A_neighbors], Hex('A', hexRadius), Number(circleRadius)],
-        [['B', B_pos, B_neighbors], Hex('B',hexRadius), Number(circleRadius)],
-        [['C', C_pos, C_neighbors], Hex('C', hexRadius), Number(circleRadius)],
-        [['D', D_pos, D_neighbors], Hex('D', hexRadius), Number(circleRadius)],
-        [['E', E_pos, E_neighbors], Hex('E', hexRadius), Number(circleRadius)],
-        [['F', F_pos, F_neighbors], Hex('F', hexRadius), Number(circleRadius)],
-        [['G', G_pos, G_neighbors], Hex('G', hexRadius), Number(circleRadius)],
-        [['H', H_pos, H_neighbors], Hex('H', hexRadius), Number(circleRadius)],
-        [['I', I_pos, I_neighbors], Hex('I', hexRadius), Number(circleRadius)],
-        [['J', J_pos, J_neighbors], Hex('J', hexRadius), Number(circleRadius)],
-        [['K', K_pos, K_neighbors], Hex('K', hexRadius), Number(circleRadius)],
-        [['L', L_pos, L_neighbors], Hex('L', hexRadius), Number(circleRadius)],
-        [['M', M_pos, M_neighbors], Hex('M', hexRadius), Number(circleRadius)],
-        [['N', N_pos, N_neighbors], Hex('N', hexRadius), Number(circleRadius)],
-        [['O', O_pos, O_neighbors], Hex('O', hexRadius), Number(circleRadius)],
-        [['P', P_pos, P_neighbors], Hex('P', hexRadius), Number(circleRadius)],
-        [['Q', Q_pos, Q_neighbors], Hex('Q', hexRadius), Number(circleRadius)],
-        [['R', R_pos, R_neighbors], Hex('R', hexRadius), Number(circleRadius)],
-        [['S', S_pos, S_neighbors], Hex('S', hexRadius), Number(circleRadius)]
+        [['A', positions[0], A_neighbors, hexRadius], Hex('A', hexRadius)],
+        [['B', positions[1], B_neighbors, hexRadius], Hex('B', hexRadius)],
+        [['C', positions[2], C_neighbors, hexRadius], Hex('C', hexRadius)],
+        [['D', positions[3], D_neighbors, hexRadius], Hex('D', hexRadius)],
+        [['E', positions[4], E_neighbors, hexRadius], Hex('E', hexRadius)],
+        [['F', positions[5], F_neighbors, hexRadius], Hex('F', hexRadius)],
+        [['G', positions[6], G_neighbors, hexRadius], Hex('G', hexRadius)],
+        [['H', positions[7], H_neighbors, hexRadius], Hex('H', hexRadius)],
+        [['I', positions[8], I_neighbors, hexRadius], Hex('I', hexRadius)],
+        [['J', positions[9], J_neighbors, hexRadius], Hex('J', hexRadius)],
+        [['K', positions[10], K_neighbors, hexRadius], Hex('K', hexRadius)],
+        [['L', positions[11], L_neighbors, hexRadius], Hex('L', hexRadius)],
+        [['M', positions[12], M_neighbors, hexRadius], Hex('M', hexRadius)],
+        [['N', positions[13], N_neighbors, hexRadius], Hex('N', hexRadius)],
+        [['O', positions[14], O_neighbors, hexRadius], Hex('O', hexRadius)],
+        [['P', positions[15], P_neighbors, hexRadius], Hex('P', hexRadius)],
+        [['Q', positions[16], Q_neighbors, hexRadius], Hex('Q', hexRadius)],
+        [['R', positions[17], R_neighbors, hexRadius], Hex('R', hexRadius)],
+        [['S', positions[18], S_neighbors, hexRadius], Hex('S', hexRadius)]
     ]
 
-    return Board(configuration, hexRadius, (0,0))
+    return CatanBoard(configuration)
+
+if __name__ == '__main__':
+    StandardSetup()
