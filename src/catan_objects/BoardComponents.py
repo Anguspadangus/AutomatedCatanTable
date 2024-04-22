@@ -16,7 +16,7 @@ class Piece(Suckable):
                         'blue' : [(87, 156, 0), (120 , 255, 210)],
                         'red' : [(162, 199, 153), (179 , 255, 239)],
                         'orange' : [(166, 204, 159), (179 , 255, 242)],
-                        'white': [(130, 81, 147), (148 , 130, 235)]}
+                        'white': [(118, 81, 142), (149 , 136, 237)]}
     
     def __init__(self, height, color, area, edges, xy = [0,0]):
         self.color = Piece.__color_dictionary[color]
@@ -26,7 +26,7 @@ class Piece(Suckable):
         
 class Robber(Piece):
     def __init__(self, xy = [0,0]):
-        super().__init__(32, 'grey', [120,290], [3,6], xy)
+        super().__init__(25, 'grey', [120,290], [3,6], xy)
         
 class Road(Piece):
     def __init__(self, color, xy = [0,0]):
@@ -34,11 +34,11 @@ class Road(Piece):
         
 class City(Piece):
     def __init__(self, color, xy = [0,0]):
-        super().__init__(7, color, [150,300], [4,7], xy)
+        super().__init__(9, color, [150,300], [4,7], xy)
         
 class Settlement(Piece):
     def __init__(self, color, xy = [0,0]):
-        super().__init__(12, color, [80,150], [3,6], xy)
+        super().__init__(7, color, [80,150], [3,6], xy)
         
 """----------------------------------------------------"""
 
@@ -105,8 +105,8 @@ class TileStack(Container):
         return None   
 
 class Bin(Container):
-    def __init__(self, position):
-        super().__init__(position)
+    def __init__(self, position, dropoff_height = 27):
+        super().__init__(position, dropoff_height = dropoff_height)
     
     def push(self, obj):
         obj.position = self.position
@@ -143,7 +143,7 @@ class EmptyHex(TileStack):
             if neighbor == '0':
                 self.neighbor_count += 1
                 
-        self.stack_height -= -0
+        self.stack_height -= 0
         
     def __eq__(self, other):
         return self.name == other.name

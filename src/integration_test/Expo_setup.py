@@ -12,25 +12,14 @@ def Setup(A_pos):
     short_hex_radius = long_hex_Radius / 2 * math.sqrt(3) * 1.01 # mm
 
     # The neighbors of each empty hex
-    A_neighbors = ['0', 'B', 'E','C', '0', '0']
-    B_neighbors = ['0', 'D', 'G','E', 'A', '0']
-    C_neighbors = ['A', 'E', 'H','F', '0', '0']
-    D_neighbors = ['0', '0', 'I','G', 'B', '0']
-    E_neighbors = ['B', 'G', 'J','H', 'C', 'A']
-    F_neighbors = ['C', 'H', 'K','0', '0', '0']
-    G_neighbors = ['D', 'I', 'L','J', 'E', 'B']
-    H_neighbors = ['E', 'J', 'M','K', 'F', 'C']
-    I_neighbors = ['0', '0', 'N','L', 'G', 'D']
+    E_neighbors = ['0', 'G', 'J','H', '0', '0']
+    G_neighbors = ['0', '0', 'L','J', 'E', '0']
+    H_neighbors = ['E', 'J', 'M','0', '0', '0']
     J_neighbors = ['G', 'L', 'O','M', 'H', 'E']
-    K_neighbors = ['H', 'M', 'P','0', '0', '0']
-    L_neighbors = ['I', 'N', 'Q','O', 'J', 'G']
-    M_neighbors = ['J', 'O', 'R','P', 'K', 'H']
-    N_neighbors = ['0', '0', '0','Q', 'L', 'I']
-    O_neighbors = ['L', 'Q', 'S','R', 'M', 'J']
-    P_neighbors = ['M', 'R', '0','0', '0', 'K']
-    Q_neighbors = ['N', '0', '0','S', 'O', 'L']
-    R_neighbors = ['O', 'S', '0','0', 'P', 'M']
-    S_neighbors = ['Q', '0', '0','0', 'R', 'O']
+    L_neighbors = ['0', '0', '0','O', 'J', 'G']
+    M_neighbors = ['J', 'O', '0','0', '0', 'H']
+    O_neighbors = ['L', '0', '0','0', 'M', 'J']
+
 
     # The position of each possible catan board, determined by the hexes radius
     # The position of each possible catan board, determined by the hexes radius
@@ -54,7 +43,13 @@ def Setup(A_pos):
     S_pos = (O_pos[0], 2 * short_hex_radius + O_pos[1])
     
     configuration = [
-        [['A', A_pos, A_neighbors, long_hex_Radius], Hex('A', long_hex_Radius)]
+        [['E', E_pos, E_neighbors, long_hex_Radius], Hex('E', long_hex_Radius)],
+        [['G', G_pos, G_neighbors, long_hex_Radius], Hex('G', long_hex_Radius)],
+        [['H', H_pos, H_neighbors, long_hex_Radius], Hex('H', long_hex_Radius)],
+        [['J', J_pos, J_neighbors, long_hex_Radius], Hex('J', long_hex_Radius)],
+        [['L', L_pos, L_neighbors, long_hex_Radius], Hex('L', long_hex_Radius)],
+        [['M', M_pos, M_neighbors, long_hex_Radius], Hex('M', long_hex_Radius)],
+        [['O', O_pos, O_neighbors, long_hex_Radius], Hex('O', long_hex_Radius)]
         ]
     
     return CatanBoard(configuration)

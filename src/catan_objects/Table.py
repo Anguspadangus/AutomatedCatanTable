@@ -1,6 +1,7 @@
 from catan_objects.TableComponents import *
 from catan_objects.Gantry import Gantry
-from integration_test.integration_setup import Setup
+#from integration_test.integration_setup import Setup
+from integration_test.Expo_setup import Setup # When running Expo Code
 
 class Table():
     def __init__(self, gantry: Gantry, camera: CameraRig, lift: Lift, cover: SingleDegreeComponent):
@@ -53,13 +54,14 @@ class Table():
         self.gantry.catan_board.add_to_board_lazy(objs)
     
     def remove_robber(self):
-        robber_hexes = self.gantry.catan_board.get_robber()
-        self.gantry.mount.z_motor.move_to(-5)
+        robber_hexes = self.camera.analyze_board([Robber()])
+        self.gantry.mount.z_motor.move_to(5)
         
         for hexagon in robber_hexes:
             self.gantry.pick_up(hexagon)
             self.gantry.place(self.gantry.robber)
-                
+            self.gantry.mount.z_motor.move_to(10)
+            
     def remove_pieces_by_color(self, color):
         pieces = self.camera.analyze_board([Road(color), Settlement(color), City(color)])
         for piece in pieces:
@@ -74,7 +76,7 @@ class Table():
                 self.gantry.place(self.gantry.orange_bin)
             
     def remove_pieces(self):
-        colors = ['red', 'blue', 'white', 'orange']
+        colors = ['red']
         for color in colors:
             self.remove_pieces_by_color(color)
             # Can check image and update

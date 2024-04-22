@@ -57,6 +57,8 @@ if os.name == 'nt':
             pass
         def capture_file(self, path):
             pass
+        def start(self):
+            pass
         
     class neopixel():
         def __init__(self):
@@ -65,16 +67,21 @@ if os.name == 'nt':
         class NeoPixel():
             def __init__(self, pin, number, brightness):
                 pass
-            def fill(color):
+            def fill(self, color):
                 pass
             
+    class board():
+        D10 = 10
+        def __init__(self):
+            pass
 else:
     import RPi.GPIO as GPIO
     from adafruit_motorkit import MotorKit
     from adafruit_motor import stepper
     from picamera2 import Picamera2
     import neopixel
-    
+    import board
+
 def GPIO_SETUP(*args):
     GPIO.setmode(GPIO.BCM)
     for arg in args:
@@ -115,7 +122,6 @@ def HAT_SETUP(type, address = 0x60):
     return motor
 
 def HAT_CONTROL(motor, steps, delay = 0.001):
-    print(delay)
     if steps > 0:
         direction = stepper.FORWARD
     else:
@@ -220,20 +226,22 @@ class LinkedMotor():
         self.motor_2._set_current_cartisan(value[1])
         
 class Lights():
-    def __init__(self, pin, number = 32, brightness = 1):
-        self.pixels = neopixel.NeoPixel(pin, number, brightness=brightness) # neopixel.NeoPixel(board.D10, 32, brightness=1)
+    def __init__(self):
+        self.pixels = neopixel.NeoPixel(board.D10, 32, brightness=1)
         
     def start(self):
         self.pixels.fill((255, 255, 255))
+        time.sleep(1)
         
     def stop(self):
         self.pixels.fill((0,0,0))
         
-class CameraModule(): # Hopefully don't run into a name clashes, we also don't need this; its just a wrapper for now
+class CameraModuleCatan(): # Hopefully don't run into a name clashes, we also don't need this; its just a wrapper for now
     def __init__(self):
         self.camera = Picamera2()
         self.camera.start()
         time.sleep(0.5)
     
-    def take_picture(self, path = '/home/pi/Desktop/cam/Catable_Image.jpg'):
+    def take_picture(self, path = 'Catable_Image.jpg'):
         self.camera.capture_file(path)
+        time.sleep(2)

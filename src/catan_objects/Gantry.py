@@ -3,13 +3,13 @@ from catan_objects.BoardComponents import *
 from catan_objects.CatanBoard import CatanBoard
 
 class PumpAssembly():
-    def __init__(self, valve: Gate_Valve, suck_motor: DCMotor, blow_motor: DCMotor = None):
+    def __init__(self, valve: DCMotor, suck_motor: DCMotor, blow_motor: DCMotor = None):
         self.valve = valve
         self.suck_motor = suck_motor
         self.blow_motor = blow_motor
         
     def suction(self, throttle = 1.0, sleep = 0.0):
-        self.valve.high()
+        self.valve.start(1)
         self.suck_motor.start(throttle)
         time.sleep(sleep)
     
@@ -20,7 +20,7 @@ class PumpAssembly():
             self.blow_motor.stop()
     
     def blow(self, throttle = 1.0, sleep = 0.0):
-        self.valve.low()
+        self.valve.stop()
         self.blow_motor.start(throttle)   
         time.sleep(sleep)
         
@@ -39,7 +39,7 @@ class Mount():
     def return_to_even(self):
         return_value = 0.0
         if isinstance(self.current_suckable, Robber):
-            return_value += 40.
+            return_value += 35.
         elif isinstance(self.current_suckable, Tile):
             return_value += 35.
         elif isinstance(self.current_suckable, Piece):
@@ -65,7 +65,7 @@ class Mount():
         if suckable.suction_type == self.right_suction_type:
             return [suckable.position[0], suckable.position[1] + self.offset]
         elif suckable.suction_type == self.left_suction_type:
-            return [suckable.position[0], suckable.position[1] - self.offset]
+            return [suckable.position[0] - 5, suckable.position[1] - self.offset + 10] # THISS MUST REMAIN UG
         
     def pick_up(self, suckable, z):
         self.current_suckable = suckable
@@ -79,7 +79,7 @@ class Mount():
             time.sleep(0.5)
             self.return_to_even()
         elif suckable.suction_type == self.left_suction_type:
-            self.left_pump_assembly.blow(0.75, 1.5)
+            self.left_pump_assembly.blow(0.75)
             self.z_motor.move_to(z)
             self.left_pump_assembly.release()
             self.left_pump_assembly.suction(1.0, 3)
@@ -90,6 +90,7 @@ class Mount():
         self.current_suckable = None
         
         z = self.convert_z(suckable, z)
+        print(f"dropoff: {z}")
         if suckable.suction_type == self.right_suction_type:
             self.z_motor.move_to(z)
             self.right_pump_assembly.release()
@@ -99,7 +100,7 @@ class Mount():
         elif suckable.suction_type == self.left_suction_type:
             self.z_motor.move_to(z)
             self.left_pump_assembly.release()
-            self.left_pump_assembly.blow(1.0, 2)
+            self.left_pump_assembly.blow(1.0, 1.5)
             self.left_pump_assembly.release()
             self.return_to_even()
             
@@ -114,7 +115,7 @@ class Gantry():
         self.catan_board = catan_board
         self.tile_stacks = [TileStack(xy) for xy in tile_stack_positions]
         self.number_stacks = [TileStack(xy) for xy in number_stack_positions]
-        self.robber = TileStack(robber_position, 100) # When we place the robber we put it here
+        self.robber = Bin(robber_position, 25) # When we place the robber we put it here
         
         self.red_bin = Bin(red_position)
         self.blue_bin = Bin(blue_position)

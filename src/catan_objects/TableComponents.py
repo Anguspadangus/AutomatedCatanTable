@@ -6,6 +6,9 @@ import numpy as np
 import cv2
 import copy
 
+CENTER_OF_CAMERAS_CATAN_BOARD = (346,262)
+# CENTER_OF_CAMERAS_CATAN_BOARD = (343,267)
+
 # Such as the lift and the cover
 class SingleDegreeComponent():
     def __init__(self, motor : Stepper, maximum_value, minimum_value = 0):
@@ -49,15 +52,13 @@ h, status = cv2.findHomography(xy, uv)
 see https://colab.research.google.com/drive/1rSl_eMrMY3c0pPDfQxWlSY97dhvtqyMP#scrollTo=VxaYMfC-n9wo
 """
 class CameraRig():
-    def __init__(self, camera : CameraModule, light: Lights, position = [0,0]):
+    def __init__(self, camera : CameraModuleCatan, light: Lights, position = [0,0]):
         self.camera = camera
         self.light = light
         self.pose = position
         self.K = np.array([[324.76825238, 0. ,373.66404696], [0., 326.72841161, 247.07466765], [0., 0., 1., ]])
         self.D = np.array([[-0.31685422,  0.11733933, -0.00043777,  0.00120568, -0.02182481]])
-        self.H = np.array([[ 3.23294418e-02,  1.04514690e+00,  2.11150059e+02],
-                            [-1.08122336e+00, -8.08570748e-03,  2.14263633e+02],
-                            [ 4.84285359e-05, -5.77222961e-05,  1.00000000e+00]])
+        self.H = np.array([[ 1.26468616e-02,  9.99554797e-01,  1.93688909e+02], [-1.00500787e+00, -2.03228976e-02,  2.70416347e+02],[ 7.01118413e-05, -2.21403641e-05,  1.00000000e+00]])
         self.image = None
         self.relative_catan_board = None
         
@@ -69,7 +70,8 @@ class CameraRig():
         # turn off light
         self.light.stop()
         # Load and undistort picture
-        self.load_image('/home/pi/Desktop/cam/Catable_Image.jpg')
+        self.load_image('Catable_Image.jpg')
+        #self.load_image('Catable_Image.jpg')
         self.undistort_picture()
         
     def undistort_picture(self):
@@ -112,13 +114,13 @@ class CameraRig():
     
     def find_desert(self, catan_board_keep, catan_board_to_update, box = (40,50)):
         self.relative_catan_board = catan_board_keep
-        self.rotate_empty_spaces([346,262], -90)
+        self.rotate_empty_spaces([CENTER_OF_CAMERAS_CATAN_BOARD[0], CENTER_OF_CAMERAS_CATAN_BOARD[1]], -90)
         
         hex_images = self.crop_to_hexes(self.image, box, True)
         pixel_counts = []
-        desert_hsv = [(159, 88, 158), (177 , 137, 211)]
+        desert_hsv = [(139, 69, 147), (169 , 114, 210)]
         for image in hex_images:
-            hsv_image = hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+            hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
             mask = cv2.inRange(hsv_image, desert_hsv[0], desert_hsv[1])
             pixel_counts.append(cv2.countNonZero(mask))
             
@@ -181,29 +183,34 @@ class CameraRig():
             # image = cv2.circle(image, pos, 10, (255,0,0), -1)
             image2 = image[pos[1] - box[1]: pos[1] + box[1], pos[0] - box[0]: pos[0] + box[0]]
             cropped_images.append(image2)
-            # cv2.circle(image, pos, 20, (255,255,255), 3)
+            #cv2.circle(image, pos, 10, (255,255,255), 3)
             
-            # cv2.namedWindow('output', cv2.WINDOW_NORMAL)
-            # cv2.imshow('output', image2)
-            # cv2.waitKey(0)
-            # cv2.destroyAllWindows()
+            #cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+            #cv2.imshow('output', image2)
+            #cv2.waitKey(0)
+            #cv2.destroyAllWindows()
         
         # Test to validate centers (scalar, offset)
-        # cv2.namedWindow('output', cv2.WINDOW_NORMAL)
-        # cv2.imshow('output', image)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
+        #cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+        #cv2.imshow('output', image)
+        #cv2.waitKey(0)
+        #cv2.destroyAllWindows()
             
         return cropped_images
 
-    def find_numbers(self, image, box = (270, 270)):
-        cropped_images = self.crop_to_hexes(image, box)
+    def find_numbers(self, image, box = (40, 50)):
+        cropped_images = self.crop_to_hexes(self.image, box)
         centers = [space.position for space in self.relative_catan_board.empty_spaces if not space.stack[0].is_desert]        
         positions = []
         
-        number_hsv = [(126, 67, 155), (165 , 111, 230)]
+        number_hsv = [(83, 51, 155), (174 , 103, 255)]
         
         for i, im in enumerate(cropped_images):
+            #cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+            #cv2.imshow('output', im)
+            #cv2.waitKey(0)
+            #cv2.destroyAllWindows()
+            
             hsv_image = cv2.cvtColor(im, cv2.COLOR_BGR2HSV)
             mask = cv2.inRange(hsv_image, number_hsv[0], number_hsv[1])
             result = cv2.bitwise_and(im, im, mask=mask)
@@ -221,7 +228,7 @@ class CameraRig():
                 blurred_image,
                 cv2.HOUGH_GRADIENT,
                 dp=1.70,      # Inverse ratio of the accumulator resolution to the image resolution.
-                minDist=60,  # Minimum distance between the centers of detected circles.
+                minDist=80,  # Minimum distance between the centers of detected circles.
                 param1=120, # Upper threshold for the internal Canny edge detector.
                 param2=26,  # Threshold for center detection.
                 minRadius=9, # Minimum radius of the detected circles.
@@ -234,20 +241,20 @@ class CameraRig():
                 for j in circles[0, :]:
                     # cv2.circle(blurred_image, (int(j[0]), int(j[1])), 11, (255,255,255), 1) 
                     pos = [int(-box[0]+j[0]+centers[i][0]), int(-box[1]+j[1]+centers[i][1])]
-                    cv2.circle(image, pos, j[2], (255,255,255), 1)        
+                    #cv2.circle(image, pos, j[2], (255,255,255), 1)        
                     pos = self.convert_to_world_single(pos)
                     positions.append(Number(10, pos))
             else:
                 # basically we're going to guess
                 pos = [int(centers[i][0]),int(centers[i][1])]
-                cv2.circle(image, pos, 10, (255,0,0), 3)    
+                #cv2.circle(image, pos, 10, (255,0,0), 3)    
                 pos = self.convert_to_world_single(pos)
                 positions.append(Number(10, pos)) 
                     
-        cv2.namedWindow('output', cv2.WINDOW_NORMAL)
-        cv2.imshow('output', image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        #cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+        #cv2.imshow('output', image)
+        #cv2.waitKey(0)
+        #cv2.destroyAllWindows()
         return positions
 
     def find_piece(self, piece : Piece, image):
@@ -258,10 +265,10 @@ class CameraRig():
         result = cv2.bitwise_and(image, image, mask=mask)
         result = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
         
-        cv2.namedWindow('output', cv2.WINDOW_NORMAL)
-        cv2.imshow('output', result)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        #cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+        #cv2.imshow('output', result)
+        #cv2.waitKey(0)
+        #cv2.destroyAllWindows()
         
         contours, _ = cv2.findContours(result, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
         contour_areas = [cv2.contourArea(contour) for contour in contours]
@@ -291,15 +298,15 @@ class CameraRig():
 
                 # Optionally, draw a circle at the center of mass
                 # cv2.circle(self.image, (cx, cy), 5, (255, 255, 255), -1)
-                cv2.drawContours(output, [approx], -1, (0, 255, 0), 3)
-                text = "num_pts={} area ={}".format(len(approx), cv2.contourArea(contour))
-                cv2.putText(output, text, (cx, cy - 15), cv2.FONT_HERSHEY_SIMPLEX,
-                    0.4, (0, 255, 0), 1)
+                #cv2.drawContours(output, [approx], -1, (0, 255, 0), 3)
+                #text = "num_pts={} area ={}".format(len(approx), cv2.contourArea(contour))
+                #cv2.putText(output, text, (cx, cy - 15), cv2.FONT_HERSHEY_SIMPLEX,
+                #    0.4, (0, 255, 0), 1)
             
-        cv2.namedWindow('output', cv2.WINDOW_NORMAL)
-        cv2.imshow('output', output)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        #cv2.namedWindow('output', cv2.WINDOW_NORMAL)
+        #cv2.imshow('output', output)
+        #cv2.waitKey(0)
+        #cv2.destroyAllWindows()
                 
         return pieces
 
@@ -322,7 +329,6 @@ class CameraRig():
         
         mask = cv2.bitwise_and(self.image, self.image, mask=mask)
         
-        
         return mask
 
     def construct_hexagon(self, center, sideLength):
@@ -341,7 +347,7 @@ class CameraRig():
             side_length = 225
 
             # Calculate the coordinates of the hexagon vertices
-            hexagon_vertices = self.construct_hexagon([346,262], side_length)
+            hexagon_vertices = self.construct_hexagon([CENTER_OF_CAMERAS_CATAN_BOARD[0], CENTER_OF_CAMERAS_CATAN_BOARD[1]], side_length)
 
             # Create a black image (initially all zeros) to serve as the mask
             mask = np.zeros_like(self.image[:, :, 0])
@@ -381,6 +387,7 @@ class CameraRig():
             locs = self.find_pieces(pieces, treated_image)
         
         elif isinstance(pieces[0], Number):
+            #self.show_image()
             locs = self.find_numbers(self.image)
         
         else:
