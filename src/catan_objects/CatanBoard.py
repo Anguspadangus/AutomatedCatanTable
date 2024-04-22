@@ -16,6 +16,11 @@ class CatanBoard():
     def add_to_board_lazy(self, to_add):
         # The lazy way but safe
         i = 0
+        
+        while len(self.empty_spaces) <= len(to_add):
+            print('too many')
+            to_add.pop()
+        
         for obj in to_add:
             if not self.empty_spaces[i].stack[0].is_desert:
                 self.empty_spaces[i].reveal(obj)

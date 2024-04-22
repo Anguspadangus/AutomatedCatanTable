@@ -1,12 +1,12 @@
-from catan_objects.TableComponents import CameraModule, Lights
+from catan_objects.TableComponents import CameraModuleCatan, Lights
 from catan_objects.TableComponents import CameraRig
 import numpy as np
 import cv2
 
-camera = CameraModule()
-lights = Lights(1)
-cam = CameraRig(camera, lights, position=[0,0])
-cam.load_image('integration_test\\images\\homo00.jpg')
+camera = CameraModuleCatan()
+
+cam = CameraRig(camera, None, position=[0,0])
+cam.load_image('/home/pi/Desktop/cam/homo_1.jpg')
 cam.undistort_picture()
 
 xy = []

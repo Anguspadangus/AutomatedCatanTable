@@ -16,7 +16,7 @@ from integration_test.integration_setup import Setup
 
 # image = cam.hexagon_mask(False, True)
 
-image = cv2.imread('src\\integration_test\\images\\image_training\\pieces3.jpg')
+image = cv2.imread('Catable_Image.jpg')
 
 def nothing(x):
     pass
@@ -34,7 +34,7 @@ cv2.createTrackbar('SMax', 'image', 0, 255, nothing)
 cv2.createTrackbar('VMax', 'image', 0, 255, nothing)
 
 # hsv_ = [(0,0,0), (179,255,255)]
-hsv_ = [(87, 194, 89), (120 , 255, 210)]
+hsv_ = [(83, 51, 155), (174 , 103, 255)]
 
 # Set default value for Max HSV trackbars
 cv2.setTrackbarPos('HMin', 'image', hsv_[0][0])
