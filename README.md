@@ -5,7 +5,6 @@ Jacob Brown, Connor Klein, and Owen Popora\
 **Faculty Advisor:** Professor Wei Wang  
 
 ## Requirements:
-matplotlib 3.6.3\
 opencv 4.8.0.76\
 build with python 3.11.5
 
@@ -15,5 +14,5 @@ https://github.com/Anguspadangus/AutomatedCatanTable/assets/71024865/375085e3-de
 ## Organization
 - src folder is our package
 - to use modules: add PYTHONPATH="\<path to git repo>\AutomatedCatanTable\src" to user enviromental variables.
+  - or in Raspberry Pi, create a .pth file to this src directory in python\site-packages
 - to enable module in your directory, must add \_\_init__.py folder
-- reference: https://dev.to/codemouse92/dead-simple-python-project-structure-and-imports-38c6
